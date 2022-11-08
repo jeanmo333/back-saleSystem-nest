@@ -11,11 +11,12 @@ export interface dataMail {
 
 const emailRegistro = async (data:dataMail) => {
   const transporter = nodemailer.createTransport({
-    host: process.env.EMAIL_HOST,
-    port: +process.env.EMAIL_PORT,
+    host: process.env.EMAIL_HOST_GMAIL,
+    port: +process.env.EMAIL_PORT_GMAIL,
+    secure:true,
     auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASS,
+      user: process.env.EMAIL_USER_GMAIL,
+      pass: process.env.EMAIL_PASS_GMAIL,
     },
   });
 
