@@ -1,8 +1,12 @@
+
+.env
+
+/posgres
+
 # compiled output
 /dist
 /node_modules
-.env
-/posgres
+
 
 # Logs
 logs
