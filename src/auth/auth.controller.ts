@@ -10,11 +10,13 @@ import {
   Patch,
   Param,
   ParseUUIDPipe,
+  Query,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiTags } from '@nestjs/swagger';
 
 import { IncomingHttpHeaders } from 'http';
+import { PaginationDto } from 'src/common/dtos/pagination.dto';
 
 import { AuthService } from './auth.service';
 import { RawHeaders, GetUser, Auth } from './decorators';
@@ -47,6 +49,14 @@ export class AuthController {
   @Auth()
   getPerfil(@GetUser() user: User) {
     return this.authService.getPerfil(user);
+  }
+
+
+  @Get('users')
+  //@Auth(ValidRoles.admin)
+  @Auth()
+  findAll(@Query() paginationDto: PaginationDto) {
+    return this.authService.findAll(paginationDto);
   }
 
 

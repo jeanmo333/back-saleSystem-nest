@@ -82,7 +82,7 @@ export class ProductsService {
   async findAll(paginationDto: PaginationDto, user: User) {
     const { limit = 10, offset = 0 } = paginationDto;
     try {
-      return await this.productRepository.find({
+      const products = await this.productRepository.find({
         where: {
           isActive: true,
           user: { id: user.id }
@@ -95,7 +95,7 @@ export class ProductsService {
         skip: offset,
       });
 
-      
+      return {products}
     } catch (error) {
       this.handleDBExceptions(error);
     }

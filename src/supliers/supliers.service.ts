@@ -95,7 +95,7 @@ export class SupliersService {
   async findAll(paginationDto: PaginationDto, user: User) {
     const { limit = 10, offset = 0 } = paginationDto;
     try {
-      return await this.suplierRepository.find({
+    const suppliers = await this.suplierRepository.find({
         where: {
           isActive: true,
           user: { id: user.id },
@@ -106,6 +106,8 @@ export class SupliersService {
         take: limit,
         skip: offset,
       });
+
+      return {suppliers}
     } catch (error) {
       this.handleDBExceptions(error);
     }

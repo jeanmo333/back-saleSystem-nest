@@ -43,7 +43,7 @@ export class CategoriesService {
     const { limit = 10, offset = 0 } = paginationDto;
 
     try {
-      return await this.categoryRepository.find({
+      const categories= await this.categoryRepository.find({
         where: {
           isActive: true,
           user: { id: user.id },
@@ -51,6 +51,8 @@ export class CategoriesService {
         take: limit,
         skip: offset,
       });
+
+      return {categories}
     } catch (error) {
       this.handleDBExceptions(error);
     }

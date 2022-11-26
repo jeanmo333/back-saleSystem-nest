@@ -20,6 +20,7 @@ import generarId from 'src/common/helpers/generarId';
 import emailForgetPassword from 'src/common/helpers/emailForgetPassword';
 import { ForgetDto } from './dto/forget.dto';
 import { NewPassWordDto } from './dto/newPassword.dto';
+import { PaginationDto } from 'src/common/dtos/pagination.dto';
 
 
 @Injectable()
@@ -126,6 +127,32 @@ export class AuthService {
       this.handleDBErrors(error);
     }
   }
+
+
+  async findAll(paginationDto: PaginationDto) {
+    const { limit = 10, offset = 0 } = paginationDto;
+    try {
+     const users= await this.userRepository.find({
+        where: {
+          isActive: true,
+        },
+        relations: {
+          category: true,
+          suplier: true,
+        },
+        take: limit,
+        skip: offset,
+      });
+
+      return {users}
+    } catch (error) {
+      this.handleDBExceptions(error);
+    }
+  }
+  handleDBExceptions(error: any) {
+    throw new Error('Method not implemented.');
+  }
+
 
   async confirmAccount(token: string) {
     const userConfirm = await this.userRepository.findOneBy({ token });

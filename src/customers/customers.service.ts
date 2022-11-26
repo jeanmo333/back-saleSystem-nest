@@ -87,7 +87,7 @@ export class CustomersService {
   async findAll(paginationDto: PaginationDto, user: User) {
     const { limit = 10, offset = 0 } = paginationDto;
     try {
-      return await this.customerRepository.find({
+     const customers = await this.customerRepository.find({
         where: {
           isActive: true,
           user: { id: user.id }
@@ -98,6 +98,8 @@ export class CustomersService {
         take: limit,
         skip: offset,
       });
+
+      return{customers}
     } catch (error) {
       this.handleDBExceptions(error);
     }
