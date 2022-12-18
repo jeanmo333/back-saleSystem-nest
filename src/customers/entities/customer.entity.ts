@@ -46,6 +46,10 @@ export class Customer {
   })
   isActive: boolean;
 
+
+  @Column('text')
+  address2: string;
+
   @IsObject()
   @OneToOne(() => CustomerAddress)
   @JoinColumn()

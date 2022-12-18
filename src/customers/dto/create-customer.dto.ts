@@ -29,6 +29,10 @@ export class CreateCustomerDto {
     @IsBoolean()
     isActive?: boolean;
 
+    @IsOptional()
+    @IsString()
+    address2?: string;
+
 
     @IsObject()
     @IsOptional()

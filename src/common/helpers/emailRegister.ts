@@ -9,7 +9,7 @@ export interface dataMail {
 }
 
 
-const emailRegistro = async (data:dataMail) => {
+const emailRegister = async (data:dataMail) => {
   const transporter = nodemailer.createTransport({
     host: process.env.EMAIL_HOST_GMAIL,
     port: +process.env.EMAIL_PORT_GMAIL,
@@ -40,4 +40,4 @@ const emailRegistro = async (data:dataMail) => {
   console.log("Mensaje enviado: %s", info.messageId);
 };
 
-export default emailRegistro;
+export default emailRegister;

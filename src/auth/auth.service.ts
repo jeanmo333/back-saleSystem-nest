@@ -13,14 +13,14 @@ import * as bcrypt from 'bcrypt';
 
 import { User } from './entities/user.entity';
 import { LoginUserDto, CreateUserDto } from './dto';
-import { JwtPayload } from './interfaces/jwt-payload.interface';
 import { UpdateUserDto } from './dto/update-user.dto';
-import emailRegistro from 'src/common/helpers/emailRegister';
 import generarId from 'src/common/helpers/generarId';
 import emailForgetPassword from 'src/common/helpers/emailForgetPassword';
 import { ForgetDto } from './dto/forget.dto';
 import { NewPassWordDto } from './dto/newPassword.dto';
 import { PaginationDto } from 'src/common/dtos/pagination.dto';
+import emailRegister from 'src/common/helpers/emailRegister';
+import { JwtPayload } from './interfaces/jwt-payload.interface';
 
 
 @Injectable()
@@ -56,7 +56,7 @@ export class AuthService {
       delete user.password;
 
       // send email
-      emailRegistro({
+      emailRegister({
         email,
         name,
         token: user.token,
@@ -146,12 +146,11 @@ export class AuthService {
 
       return {users}
     } catch (error) {
-      this.handleDBExceptions(error);
+      this.handleDBErrors(error);
     }
   }
-  handleDBExceptions(error: any) {
-    throw new Error('Method not implemented.');
-  }
+
+
 
 
   async confirmAccount(token: string) {

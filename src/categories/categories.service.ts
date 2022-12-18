@@ -29,15 +29,18 @@ export class CategoriesService {
 
     const categoryName = await this.categoryRepository.findOneBy({ name });
     if (categoryName)
-      throw new BadRequestException(`category with name: ${name} already exit`);
+      throw new BadRequestException('categoria ya existe');
     try {
-      const category = this.categoryRepository.create(createCategoryDto);
-      category.user = user;
-      return await this.categoryRepository.save(category);
+      const categoryCreate = this.categoryRepository.create(createCategoryDto);
+      categoryCreate.user = user;
+     const categorySave = await this.categoryRepository.save(categoryCreate);
+
+     return {categorySave, message: 'Agregado con exito'}
     } catch (error) {
       this.handleDBExceptions(error);
     }
   }
+
 
   async findAll(paginationDto: PaginationDto, user: User) {
     const { limit = 10, offset = 0 } = paginationDto;
@@ -79,16 +82,15 @@ export class CategoriesService {
     if (category.isActive === false)
       throw new NotFoundException('category is not active');
 
-    return category;
+    return {category};
   }
 
   async update(id: string, updateCategoryDto: UpdateCategoryDto, user: User) {
     const { name, description, isActive } = updateCategoryDto;
    
-
-
     const category = await this.categoryRepository.findOneBy({ id });
-    if (!category) throw new NotFoundException('category not found');
+    if (!category) throw new NotFoundException('categoria no existe');
+
 
     if (category.user.id !== user.id)
     throw new ForbiddenException('acceso no permitido');
@@ -98,8 +100,10 @@ export class CategoriesService {
     category.isActive = isActive;
 
     try {
-      await this.categoryRepository.update(id, category);
-      return category;
+     await this.categoryRepository.update(id, category);
+
+     const categoryUpdate =  await this.categoryRepository.findOneBy({ id });
+     return {categoryUpdate, message: 'Editado con exito'}
     } catch (error) {
       this.handleDBExceptions(error);
     }
@@ -116,7 +120,9 @@ export class CategoriesService {
 
     try {
       await this.categoryRepository.update(id, category);
-      return category;
+      //return category;
+     const categoryDelete =  await this.categoryRepository.findOneBy({ id });
+     return {categoryDelete, message: 'Eliminado con exito'}
     } catch (error) {
       this.handleDBExceptions(error);
     }

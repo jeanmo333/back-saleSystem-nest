@@ -28,8 +28,6 @@ export class CustomersService {
     private readonly addressRepository: Repository<CustomerAddress>,
   ) {}
 
-
-
   async create(createCustomerDto: CreateCustomerDto, user: User) {
     const { rut, phone, email, web } = createCustomerDto;
 
@@ -56,14 +54,14 @@ export class CustomersService {
     try {
       const { address, ...rest } = createCustomerDto;
 
-      const newCustomerAddress = new CustomerAddress();
+      // const newCustomerAddress = new CustomerAddress();
 
-      newCustomerAddress.calle = address.calle;
-      newCustomerAddress.numero = address.numero;
-      newCustomerAddress.ciudad = address.ciudad;
-      newCustomerAddress.comuna = address.comuna;
+      // newCustomerAddress.calle = address.calle;
+      // newCustomerAddress.numero = address.numero;
+      // newCustomerAddress.ciudad = address.ciudad;
+      // newCustomerAddress.comuna = address.comuna;
 
-      await this.addressRepository.save(newCustomerAddress);
+      // await this.addressRepository.save(newCustomerAddress);
 
       const customer = new Customer();
 
@@ -73,12 +71,13 @@ export class CustomersService {
       customer.phone = rest.phone;
       customer.web = rest.web;
       customer.isActive = rest.isActive;
-      customer.address = newCustomerAddress;
-      customer.user=user;
+      customer.address2 = rest.address2;
+      // customer.address = newCustomerAddress;
+      customer.user = user;
 
-      await this.customerRepository.save(customer);
+      const customerSave = await this.customerRepository.save(customer);
 
-      return customer ;
+      return { customerSave, message: 'Agregado con exito' };
     } catch (error) {
       this.handleDBExceptions(error);
     }
@@ -87,10 +86,10 @@ export class CustomersService {
   async findAll(paginationDto: PaginationDto, user: User) {
     const { limit = 10, offset = 0 } = paginationDto;
     try {
-     const customers = await this.customerRepository.find({
+      const customers = await this.customerRepository.find({
         where: {
           isActive: true,
-          user: { id: user.id }
+          user: { id: user.id },
         },
         relations: {
           address: true,
@@ -99,86 +98,84 @@ export class CustomersService {
         skip: offset,
       });
 
-      return{customers}
+      return { customers };
     } catch (error) {
       this.handleDBExceptions(error);
     }
   }
 
   async findOne(term: string, user: User) {
- 
     let customer: Customer;
 
     if (isUUID(term)) {
       customer = await this.customerRepository.findOne({
-        where: { id: term, user: { id: user.id }},
+        where: { id: term, user: { id: user.id } },
         relations: {
-          address: true
+          address: true,
         },
       });
     } else {
       customer = await this.customerRepository.findOne({
         where: { name: term.toLowerCase(), user: { id: user.id } },
         relations: {
-          address: true
+          address: true,
         },
       });
     }
 
-    if (!customer) throw new  NotFoundException('customer not found');
+    if (!customer) throw new NotFoundException('customer not found');
 
     if (customer.user.id !== user.id)
-    throw new ForbiddenException('acceso no permitido');
-  
+      throw new ForbiddenException('acceso no permitido');
+
     if (customer.isActive === false)
       throw new NotFoundException('customer is not active');
 
-    return customer;
+    return { customer };
   }
 
   async update(id: string, updateCustomerDto: UpdateCustomerDto, user: User) {
     const { address, ...rest } = updateCustomerDto;
     rest.name = rest.name.toLowerCase();
 
-    const newAddress = new CustomerAddress();
-    newAddress.calle = address.calle || newAddress.calle;
-    newAddress.numero = address.numero || newAddress.numero;
-    newAddress.ciudad = address.ciudad || newAddress.ciudad ;
-    newAddress.comuna = address.comuna || newAddress.comuna;
+    // const newAddress = new CustomerAddress();
+    // newAddress.calle = address.calle || newAddress.calle;
+    // newAddress.numero = address.numero || newAddress.numero;
+    // newAddress.ciudad = address.ciudad || newAddress.ciudad ;
+    // newAddress.comuna = address.comuna || newAddress.comuna;
 
-    await this.addressRepository.save(newAddress);
+    // await this.addressRepository.save(newAddress);
 
     const customer = await this.customerRepository.findOneBy({ id });
     if (!customer) throw new NotFoundException('customer not found');
 
-
     if (customer.user.id !== user.id)
-    throw new ForbiddenException('acceso no permitido');
-
+      throw new ForbiddenException('acceso no permitido');
 
     customer.name = rest.name || customer.name;
-    customer.email = rest.email || customer.email ;
+    customer.email = rest.email || customer.email;
     customer.phone = rest.phone || customer.phone;
     customer.rut = rest.rut || customer.rut;
     customer.web = rest.web || customer.web;
     customer.isActive = rest.isActive;
-    customer.address = newAddress || customer.address;
+    customer.address2 = rest.address2;
+    // customer.address = newAddress || customer.address;
 
     try {
-       await this.customerRepository.update(id, customer);
-       return customer;
+      await this.customerRepository.update(id, customer);
+      const customerUpdate = await this.customerRepository.findOneBy({ id });
+      return { customerUpdate, message: 'Editado con exito' };
     } catch (error) {
       this.handleDBExceptions(error);
     }
   }
-
 
   async remove(id: string, user: User) {
     const customer = await this.customerRepository.findOneBy({ id });
     if (!customer) throw new NotFoundException('customer not found');
 
     if (customer.user.id !== user.id)
-    throw new ForbiddenException('acceso no permitido');
+      throw new ForbiddenException('acceso no permitido');
 
     customer.isActive = false;
 
@@ -189,7 +186,6 @@ export class CustomersService {
       this.handleDBExceptions(error);
     }
   }
-
 
   private handleDBExceptions(error: any) {
     if (error.code === '23505') throw new BadRequestException(error.detail);

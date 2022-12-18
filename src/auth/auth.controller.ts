@@ -54,7 +54,7 @@ export class AuthController {
 
   @Get('users')
   //@Auth(ValidRoles.admin)
-  @Auth()
+  //@Auth()
   findAll(@Query() paginationDto: PaginationDto) {
     return this.authService.findAll(paginationDto);
   }

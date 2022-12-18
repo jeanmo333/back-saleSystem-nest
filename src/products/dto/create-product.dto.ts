@@ -12,7 +12,6 @@ import {
 
 export class CreateProductDto {
   @IsString({ message: 'must be a string' })
-  
   @MinLength(1, { message: 'minimo un caracter' })
   name: string;
 

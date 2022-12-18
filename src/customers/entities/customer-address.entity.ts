@@ -10,12 +10,12 @@ export class CustomerAddress {
 
 
     @Column('text')
-    calle: string;
+    calle?: string;
 
     @IsInt()
     @IsPositive()
     @Column('int')
-    numero: number;
+    numero?: number;
 
 
 

@@ -26,11 +26,18 @@ export class CategoriesController {
     return this.categoriesService.create(createCategoryDto, user);
   }
 
+  // @Get()
+  // @Auth()
+  // findAll(@Query() paginationDto: PaginationDto, @GetUser() user: User) {
+  //   return this.categoriesService.findAll(paginationDto, user);
+  // }
+
   @Get()
-  @Auth()
-  findAll(@Query() paginationDto: PaginationDto, @GetUser() user: User) {
-    return this.categoriesService.findAll(paginationDto, user);
+ // @Auth()
+  findAll(@Query() paginationDto: PaginationDto) {
+    return this.categoriesService.findAll(paginationDto);
   }
+
 
   @Get(':term')
   @Auth()
