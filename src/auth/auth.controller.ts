@@ -11,6 +11,7 @@ import {
   Param,
   ParseUUIDPipe,
   Query,
+  Delete,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiTags } from '@nestjs/swagger';
@@ -51,15 +52,6 @@ export class AuthController {
     return this.authService.getPerfil(user);
   }
 
-
-  @Get('users')
-  //@Auth(ValidRoles.admin)
-  //@Auth()
-  findAll(@Query() paginationDto: PaginationDto) {
-    return this.authService.findAll(paginationDto);
-  }
-
-
   @Patch('perfil/update')
   @Auth()
   update(
@@ -95,5 +87,39 @@ export class AuthController {
   checkToken(@Param('token') token: string) {
     return this.authService.checkToken(token);
   }
+
+
+/*********************************Admin********************************************** */
+  
+@Post('admin/register')
+@Auth(ValidRoles.admin)
+createUserAdmin(@Body() createUserDto: CreateUserDto) {
+  return this.authService.createByAdmin(createUserDto);
+}
+
+
+  @Get('admin/users')
+  @Auth(ValidRoles.admin)
+  findAll(@Query() paginationDto: PaginationDto) {
+    return this.authService.findAll(paginationDto);
+  }
+
+
+  @Patch('admin/update-user/:id')
+  @Auth(ValidRoles.admin)
+  updateByAdmin(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() updateProductDto: UpdateUserDto,
+  ) {
+    return this.authService.updateByAdmin(id, updateProductDto);
+  }
+
+
+  @Delete('admin/delete-user/:id')
+  @Auth(ValidRoles.admin)
+  removeByAdmin(@Param('id', ParseUUIDPipe) id: string) {
+    return this.authService.removeByAdmin(id);
+  }
+
  
 }

@@ -44,6 +44,17 @@ export class User {
 
 
   @Column('text', {
+    default: "",
+  })
+  phone?: string;
+
+  @Column('text', {
+    default: "",
+  })
+  web?: string;
+
+
+  @Column('text', {
     default: generarId(),
   })
   token: string

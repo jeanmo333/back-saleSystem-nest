@@ -51,12 +51,12 @@ export class AuthService {
       await this.userRepository.save(user);
       delete user.password;
 
-      // send email
-      emailRegister({
-        email,
-        name,
-        token: user.token,
-      });
+      // // send email
+      // emailRegister({
+      //   email,
+      //   name,
+      //   token: user.token,
+      // });
 
       return {
         message: 'Revisa tu email para confirmar tu cuenta',
@@ -115,26 +115,6 @@ export class AuthService {
     }
   }
 
-  async findAll(paginationDto: PaginationDto) {
-    const { limit = 10, offset = 0 } = paginationDto;
-    try {
-      const users = await this.userRepository.find({
-        where: {
-          isActive: true,
-        },
-        relations: {
-          category: true,
-          suplier: true,
-        },
-        take: limit,
-        skip: offset,
-      });
-
-      return { users };
-    } catch (error) {
-      this.handleDBErrors(error);
-    }
-  }
 
   async confirmAccount(token: string) {
     const userConfirm = await this.userRepository.findOneBy({ token });
@@ -208,4 +188,112 @@ export class AuthService {
 
     throw new InternalServerErrorException('Please check server logs');
   }
+
+/*************************************Admin******************************************* */
+
+async createByAdmin(createUserDto: CreateUserDto) {
+  const { password, ...userData } = createUserDto;
+  const { email } = userData;
+
+  const userEmail = await this.userRepository.findOneBy({ email });
+  if (userEmail) {
+    throw new BadRequestException('Este email ya existe');
+  }
+
+  try {
+    const user = this.userRepository.create({
+      ...userData,
+      password: bcrypt.hashSync(password, 10),
+    });
+
+    // user.isActive= true;
+    // user.token='';
+
+    await this.userRepository.save(user);
+    delete user.password;
+
+    // // send email
+    // emailRegister({
+    //   email,
+    //   name,
+    //   token: user.token,
+    // });
+
+    return {
+      message: 'Revisa tu email para confirmar tu cuenta',
+    };
+  } catch (error) {
+    this.handleDBErrors(error);
+  }
+}
+
+
+
+  async findAll(paginationDto: PaginationDto) {
+    const { limit = 10, offset = 0 } = paginationDto;
+    try {
+      return await this.userRepository.find({
+        where: {
+          isActive: true,
+        },
+        relations: {
+          category: true,
+          suplier: true,
+        },
+        take: limit,
+        skip: offset,
+      });
+    } catch (error) {
+      this.handleDBErrors(error);
+    }
+  }
+
+
+
+  async updateByAdmin(id: string, updateUserDto: UpdateUserDto) {
+    const { password, ...userData } = updateUserDto;
+
+    userData.name= userData.name.toLowerCase();
+
+    const userId = await this.userRepository.findOneBy({ id });
+    if (!userId) throw new NotFoundException('customer not found');
+
+    try {
+      const userSave = this.userRepository.create({
+        ...userData,
+        password: bcrypt.hashSync(password, 10),
+      });
+  
+      await this.userRepository.update(id, userSave);
+   
+      const userUpdate = await this.userRepository.findOneBy({ id });
+      return { userUpdate, message: 'Editado con exito' };
+    } catch (error) {
+      this.handleDBExceptions(error);
+    }
+  }
+
+  async removeByAdmin(id: string) {
+    const user = await this.userRepository.findOneBy({ id });
+    if (!user) throw new NotFoundException('Usuario no existe');
+
+    try {
+      await this.userRepository.delete(id);
+    } catch (error) {
+      this.handleDBExceptions(error);
+    }
+  }
+
+
+
+  private handleDBExceptions(error: any) {
+    if (error.code === '23505') throw new BadRequestException(error.detail);
+
+    this.logger.error(error);
+    // console.log(error)
+    throw new InternalServerErrorException(
+      'Unexpected error, check server logs',
+    );
+  }
+
 }

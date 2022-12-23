@@ -36,13 +36,13 @@ export class ProductsService {
     const { category, supplier, ...rest } = createProductDto;
     rest.name = rest.name.toLowerCase();
 
-    if (!isUUID(category)) {
-      throw new BadRequestException('Categoria no valida');
-    }
+    // if (!isUUID(category)) {
+    //   throw new BadRequestException('Categoria no valida');
+    // }
 
-    if (!isUUID(supplier)) {
-      throw new BadRequestException('Proveedor no valido');
-    }
+    // if (!isUUID(supplier)) {
+    //   throw new BadRequestException('Proveedor no valido');
+    // }
 
     const ProductFound = await this.productRepository.findOneBy({
       name: rest.name,
@@ -50,11 +50,11 @@ export class ProductsService {
     if (ProductFound) throw new BadRequestException('Producto ya existe');
 
     const categoryDb = await this.categoryRepository.findOneBy({
-      id: category,
+      name: category,
     });
     if (!categoryDb) throw new NotFoundException('categoria no existe');
 
-    const suplierDb = await this.suplierRepository.findOneBy({ id: supplier });
+    const suplierDb = await this.suplierRepository.findOneBy({ name: supplier });
     if (!suplierDb) throw new NotFoundException('proveedor no existe');
 
     try {
