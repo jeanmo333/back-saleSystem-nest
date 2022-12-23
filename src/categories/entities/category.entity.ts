@@ -41,15 +41,11 @@ export class Category {
   checkNameInsert() {
     this.name = this.name
       .toLowerCase()
-      .replaceAll(' ', '_')
-      .replaceAll("'", '');
   }
 
   @BeforeUpdate()
   checkNameUpdate() {
     this.name = this.name
       .toLowerCase()
-      .replaceAll(' ', '_')
-      .replaceAll("'", '');
   }
 }

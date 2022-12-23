@@ -69,15 +69,11 @@ export class Product {
   checkNameInsert() {
     this.name = this.name
       .toLowerCase()
-      .replaceAll(' ', '_')
-      .replaceAll("'", '');
   }
 
   @BeforeUpdate()
   checkNameUpdate() {
     this.name = this.name
       .toLowerCase()
-      .replaceAll(' ', '_')
-      .replaceAll("'", '');
   }
 }

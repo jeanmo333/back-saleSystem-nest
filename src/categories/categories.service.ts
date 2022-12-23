@@ -44,9 +44,8 @@ export class CategoriesService {
 
   async findAll(paginationDto: PaginationDto, user: User) {
     const { limit = 10, offset = 0 } = paginationDto;
-
     try {
-      const categories= await this.categoryRepository.find({
+      return await this.categoryRepository.find({
         where: {
           isActive: true,
           user: { id: user.id },
@@ -55,7 +54,7 @@ export class CategoriesService {
         skip: offset,
       });
 
-      return {categories}
+    
     } catch (error) {
       this.handleDBExceptions(error);
     }
@@ -116,13 +115,8 @@ export class CategoriesService {
     if (category.user.id !== user.id)
     throw new ForbiddenException('acceso no permitido');
 
-    category.isActive = false;
-
     try {
-      await this.categoryRepository.update(id, category);
-      //return category;
-     const categoryDelete =  await this.categoryRepository.findOneBy({ id });
-     return {categoryDelete, message: 'Eliminado con exito'}
+      await this.categoryRepository.delete(id);
     } catch (error) {
       this.handleDBExceptions(error);
     }

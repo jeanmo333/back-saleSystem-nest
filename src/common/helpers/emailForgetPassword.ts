@@ -30,13 +30,13 @@ const emailForgetPassword = async (datos:dataMail) => {
     html: `<p>Hola: ${name}, has solicitado reestablecer tu password.</p>
 
         <p>Sigue el siguiente enlace para generar un nuevo password:
-        <a href="${process.env.FRONTEND_URL}/auth/newPassword/${token}">Reestablecer Password</a> </p>
+        <a href="${process.env.FRONTEND_URL}/new-password/${token}">Reestablecer Password</a> </p>
 
         <p>Si tu no creaste esta cuenta, puedes ignorar este mensaje</p>
     `,
   });
 
-  console.log("Mensaje enviado: %s", info.messageId);
+ // console.log("Mensaje enviado: %s", info.messageId);
 };
 
 export default emailForgetPassword;

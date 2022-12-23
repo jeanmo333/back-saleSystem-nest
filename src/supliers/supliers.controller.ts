@@ -18,7 +18,7 @@ import { Auth, GetUser } from 'src/auth/decorators';
 import { User } from 'src/auth/entities/user.entity';
 import path from 'node:path/win32';
 
-@Controller('supliers')
+@Controller('suppliers')
 export class SupliersController {
   constructor(private readonly supliersService: SupliersService) {}
 

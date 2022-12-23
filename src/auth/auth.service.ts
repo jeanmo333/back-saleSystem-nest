@@ -22,7 +22,6 @@ import { PaginationDto } from 'src/common/dtos/pagination.dto';
 import emailRegister from 'src/common/helpers/emailRegister';
 import { JwtPayload } from './interfaces/jwt-payload.interface';
 
-
 @Injectable()
 export class AuthService {
   private readonly logger = new Logger('AuthService');
@@ -36,13 +35,12 @@ export class AuthService {
 
   async create(createUserDto: CreateUserDto) {
     const { password, ...userData } = createUserDto;
-    const { email, name  } = userData;
+    const { email, name } = userData;
 
     const userEmail = await this.userRepository.findOneBy({ email });
-    if(userEmail){
-      throw new BadRequestException('Email already exist')
+    if (userEmail) {
+      throw new BadRequestException('Este email ya existe');
     }
-
 
     try {
       const user = this.userRepository.create({
@@ -50,8 +48,6 @@ export class AuthService {
         password: bcrypt.hashSync(password, 10),
       });
 
-
-     
       await this.userRepository.save(user);
       delete user.password;
 
@@ -63,11 +59,8 @@ export class AuthService {
       });
 
       return {
-        message: "check your email and confirm your account",
-        ...user,
-        token: this.getJwtToken({ id: user.id }),
+        message: 'Revisa tu email para confirmar tu cuenta',
       };
-   
     } catch (error) {
       this.handleDBErrors(error);
     }
@@ -81,18 +74,14 @@ export class AuthService {
       select: { email: true, password: true, id: true, isActive: true }, //! OJO!
     });
 
-    if (!user)
-      throw new BadRequestException('Email or Password are not valid (email)');
+    if (!user) throw new BadRequestException('Email o Password no valido');
 
-   
     if (!bcrypt.compareSync(password, user.password))
-      throw new BadRequestException('Email or Password are not valid (password)');
+      throw new BadRequestException('Email o Password no valido');
 
-
-      if (!user.isActive) {
-        throw new BadRequestException('Your account has not been confirmed');
-      }
-  
+    if (!user.isActive) {
+      throw new BadRequestException('Tu cuenta no ha sido confirmado');
+    }
 
     return {
       ...user,
@@ -101,10 +90,8 @@ export class AuthService {
   }
 
   async getPerfil(user: User) {
-    return {
-      ...user,
-      token: this.getJwtToken({ id: user.id }),
-    };
+    const { id, email, name, roles } = user;
+    return { id, email, name, roles };
   }
 
   private getJwtToken(payload: JwtPayload) {
@@ -128,11 +115,10 @@ export class AuthService {
     }
   }
 
-
   async findAll(paginationDto: PaginationDto) {
     const { limit = 10, offset = 0 } = paginationDto;
     try {
-     const users= await this.userRepository.find({
+      const users = await this.userRepository.find({
         where: {
           isActive: true,
         },
@@ -144,93 +130,76 @@ export class AuthService {
         skip: offset,
       });
 
-      return {users}
+      return { users };
     } catch (error) {
       this.handleDBErrors(error);
     }
   }
 
-
-
-
   async confirmAccount(token: string) {
     const userConfirm = await this.userRepository.findOneBy({ token });
 
-    if (!userConfirm) throw new NotFoundException('Token no válido');
+   if (!userConfirm) throw new NotFoundException('Token no válido');
 
     try {
       userConfirm.token = '';
       userConfirm.isActive = true;
       await this.userRepository.save(userConfirm);
 
-      return { message: 'Account Confirm successfuly' };
+      return { message: 'Cuenta confirmado con exito' };
     } catch (error) {
       console.log(error);
-      return { message: 'can not comfirm account' };
-     
+      throw new BadRequestException("no se puede confirmar la cuenta")
     }
   }
 
+  async forgetPassword(forgetDto: ForgetDto) {
+    const { email } = forgetDto;
+    const userEmail = await this.userRepository.findOneBy({ email });
 
+    if (!userEmail) throw new NotFoundException('Este email no existe');
 
-
-async forgetPassword (forgetDto: ForgetDto) {
- const {email} = forgetDto
-  const userEmail = await this.userRepository.findOneBy({ email });
-  
-    if (!userEmail) throw new NotFoundException('email not exist');
-  
     try {
       userEmail.token = generarId();
       await this.userRepository.save(userEmail);
-  
+
       // Enviar Email con instrucciones
       emailForgetPassword({
         email,
         name: userEmail.name,
         token: userEmail.token,
       });
-  
-      return { message: 'check your email, and reset password' };
+
+      return { message: 'Revisa tu email para resetear tu password' };
     } catch (error) {
       console.log(error);
       return { message: 'can not change password' };
     }
-  };
+  }
 
-
-
-    async newPassword (token: string, newPassWordDto: NewPassWordDto) {
-
-    const { password} = newPassWordDto;
+  async newPassword(token: string, newPassWordDto: NewPassWordDto) {
+    const { password } = newPassWordDto;
     const userToken = await this.userRepository.findOneBy({ token });
     if (!userToken) throw new NotFoundException('token not valid');
-  
+
     try {
       userToken.token = '';
-     userToken.password = bcrypt.hashSync(password, 10)
+      userToken.password = bcrypt.hashSync(password, 10);
       await this.userRepository.save(userToken);
-      return { message: 'password change successfuly' };
+      return { message: 'password modificado con exito' };
     } catch (error) {
       console.log(error);
     }
-  };
+  }
 
-
-
-
-
-    async checkToken (token: string) {
-      const userToken = await this.userRepository.findOneBy({ token });
-      if (userToken) {
-       return {message: 'Token valid, user exist'} 
-      }else{
-        throw new NotFoundException('token not valid');
-      };
-  
-  };
-
-
+  async checkToken(token: string) {
+    const userToken = await this.userRepository.findOneBy({ token });
+    if (userToken) {
+      return { message: 'Token valid, user exist' };
+    } else {
+      throw new NotFoundException('token not valid');
+    }
+  }
 
   private handleDBErrors(error: any): never {
     if (error.code === '23505') throw new BadRequestException(error.detail);

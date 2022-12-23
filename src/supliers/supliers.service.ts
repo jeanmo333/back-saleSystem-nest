@@ -29,49 +29,34 @@ export class SupliersService {
   ) {}
 
   async create(createSuplierDto: CreateSuplierDto, user: User) {
-    const { address, ...rest } = createSuplierDto;
+    const { rut, phone, email, web } = createSuplierDto;
 
-    const suplierRut = await this.suplierRepository.findOneBy({
-      rut: rest.rut,
-    });
+    const suplierRut = await this.suplierRepository.findOneBy({ rut });
     if (suplierRut)
-      throw new BadRequestException(
-        `suplier with rut: ${rest.rut} already exit`,
-      );
+      throw new BadRequestException("rut proveedor ya existe");
 
-    const suplierTelefono = await this.suplierRepository.findOneBy({
-      phone: rest.phone,
-    });
+    const suplierTelefono = await this.suplierRepository.findOneBy({phone});
     if (suplierTelefono)
-      throw new BadRequestException(
-        `suplier with phone: ${rest.phone} already exit`,
-      );
+      throw new BadRequestException("Telefono proveedor ya existe");
 
-    const suplierEmail = await this.suplierRepository.findOneBy({
-      email: rest.email,
-    });
+    const suplierEmail = await this.suplierRepository.findOneBy({email});
     if (suplierEmail)
-      throw new BadRequestException(
-        `suplier with email: ${rest.email} already exit`,
-      );
+      throw new BadRequestException("Email proveedor ya existe");
 
-    const suplierWeb = await this.suplierRepository.findOneBy({
-      web: rest.web,
-    });
+    const suplierWeb = await this.suplierRepository.findOneBy({web});
     if (suplierWeb)
-      throw new BadRequestException(
-        `suplier with web: ${rest.web} already exit`,
-      );
+      throw new BadRequestException("Web proveedor ya existe");
 
     try {
-      const newAddressSuplier = new SuplierAddress();
+      const { address, ...rest } = createSuplierDto;
+      // const newAddressSuplier = new SuplierAddress();
       
-      newAddressSuplier.calle = address.calle;
-      newAddressSuplier.numero = address.numero;
-      newAddressSuplier.ciudad = address.ciudad;
-      newAddressSuplier.comuna = address.comuna;
+      // newAddressSuplier.calle = address.calle;
+      // newAddressSuplier.numero = address.numero;
+      // newAddressSuplier.ciudad = address.ciudad;
+      // newAddressSuplier.comuna = address.comuna;
 
-      await this.suplierAddressRopository.save(newAddressSuplier);
+      // await this.suplierAddressRopository.save(newAddressSuplier);
 
       const suplier = new Suplier();
 
@@ -81,11 +66,11 @@ export class SupliersService {
       suplier.phone = rest.phone;
       suplier.web = rest.web;
       suplier.isActive = rest.isActive;
-      suplier.address = newAddressSuplier;
+      suplier.address2 = rest.address2;
       suplier.user=user;
 
-      await this.suplierRepository.save(suplier);
-      return { suplier };
+    const supplierSave=  await this.suplierRepository.save(suplier);
+      return { supplierSave, message: 'Agregado con exito' };
      
     } catch (error) {
       this.handleDBExceptions(error);
@@ -95,7 +80,7 @@ export class SupliersService {
   async findAll(paginationDto: PaginationDto, user: User) {
     const { limit = 10, offset = 0 } = paginationDto;
     try {
-    const suppliers = await this.suplierRepository.find({
+    return await this.suplierRepository.find({
         where: {
           isActive: true,
           user: { id: user.id },
@@ -106,25 +91,23 @@ export class SupliersService {
         take: limit,
         skip: offset,
       });
-
-      return {suppliers}
     } catch (error) {
       this.handleDBExceptions(error);
     }
   }
 
   async findOne(term: string, user: User) {
-    let suplier: Suplier;
+    let supplier: Suplier;
    
       if (isUUID(term)) {
-        suplier = await this.suplierRepository.findOne({
+        supplier = await this.suplierRepository.findOne({
           where: { id: term,  user: { id: user.id } },
           relations: {
             address: true
           },
         });
       } else {
-        suplier = await this.suplierRepository.findOne({
+        supplier = await this.suplierRepository.findOne({
           where: { name: term.toLowerCase(),  user: { id: user.id } },
           relations: {
             address: true
@@ -133,15 +116,15 @@ export class SupliersService {
       }
 
 
-      if (!suplier) throw new NotFoundException('suplier not found');
+      if (!supplier) throw new NotFoundException('suplier not found');
 
-      if (suplier.user.id !== user.id)
+      if (supplier.user.id !== user.id)
       throw new ForbiddenException('acceso no permitido');
   
-      if (suplier.isActive === false)
+      if (supplier.isActive === false)
       throw new NotFoundException('suplier is not active');
 
-      return suplier;
+      return {supplier};
    
   }
 
@@ -156,13 +139,13 @@ export class SupliersService {
     throw new ForbiddenException('acceso no permitido');
 
 
-    const newAddress = new SuplierAddress();
-    newAddress.calle = address.calle || newAddress.calle;
-    newAddress.numero = address.numero || newAddress.numero;
-    newAddress.ciudad = address.ciudad || newAddress.ciudad;
-    newAddress.comuna = address.comuna || newAddress.comuna;
+    // const newAddress = new SuplierAddress();
+    // newAddress.calle = address.calle || newAddress.calle;
+    // newAddress.numero = address.numero || newAddress.numero;
+    // newAddress.ciudad = address.ciudad || newAddress.ciudad;
+    // newAddress.comuna = address.comuna || newAddress.comuna;
 
-    await this.suplierAddressRopository.save(newAddress);
+    // await this.suplierAddressRopository.save(newAddress);
 
     suplier.name = rest.name || suplier.name;
     suplier.email = rest.email || suplier.email;
@@ -170,11 +153,13 @@ export class SupliersService {
     suplier.rut = rest.rut ||suplier.rut ;
     suplier.web = rest.web || suplier.web;
     suplier.isActive = rest.isActive;
-    suplier.address = newAddress || suplier.address;
+    suplier.address2 = rest.address2 || suplier.address2;
 
     try {
+
       await this.suplierRepository.update(id, suplier);
-      return suplier;
+      const supplierUpdate = await this.suplierRepository.findOneBy({ id });
+      return { supplierUpdate, message: 'Editado con exito' };
     } catch (error) {
       this.handleDBExceptions(error);
     }
@@ -188,11 +173,8 @@ export class SupliersService {
     if (suplier.user.id !== user.id)
     throw new ForbiddenException('acceso no permitido');
 
-    suplier.isActive = false;
-
     try {
-      await this.suplierRepository.update(id, suplier);
-      return suplier;
+      await this.suplierRepository.delete(id);
     } catch (error) {
       this.handleDBExceptions(error);
     }

@@ -3,6 +3,9 @@ import { CreateAddressDto} from "../../common/dtos/create-address.dto";
 
 export class CreateSuplierDto {
 
+    @IsString()
+    @IsOptional()
+    id: string;
 
     @IsString()
     @MinLength(10)
@@ -29,6 +32,10 @@ export class CreateSuplierDto {
     @IsOptional()
     @IsBoolean()
     isActive?: boolean;
+
+    @IsOptional()
+    @IsString()
+    address2?: string;
     
     @IsObject()
     @IsOptional()

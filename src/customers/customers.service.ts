@@ -32,24 +32,17 @@ export class CustomersService {
     const { rut, phone, email, web } = createCustomerDto;
 
     const customerRut = await this.customerRepository.findOneBy({ rut });
-    if (customerRut)
-      throw new BadRequestException(`customer with rut: ${rut} already exit`);
+    if (customerRut) throw new BadRequestException('Cliente ya existe');
 
     const customerPhone = await this.customerRepository.findOneBy({ phone });
     if (customerPhone)
-      throw new BadRequestException(
-        `customer with phone: ${phone} already exit`,
-      );
+      throw new BadRequestException('Telefon cliente ya existe');
 
     const customerEmail = await this.customerRepository.findOneBy({ email });
-    if (customerEmail)
-      throw new BadRequestException(
-        `customer with email: ${email} already exit`,
-      );
+    if (customerEmail) throw new BadRequestException('Email cliente ya existe');
 
     const customerWeb = await this.customerRepository.findOneBy({ web });
-    if (customerWeb)
-      throw new BadRequestException(`customer with web: ${web} already exit`);
+    if (customerWeb) throw new BadRequestException('web cliente ya existe');
 
     try {
       const { address, ...rest } = createCustomerDto;
@@ -86,7 +79,7 @@ export class CustomersService {
   async findAll(paginationDto: PaginationDto, user: User) {
     const { limit = 10, offset = 0 } = paginationDto;
     try {
-      const customers = await this.customerRepository.find({
+      return await this.customerRepository.find({
         where: {
           isActive: true,
           user: { id: user.id },
@@ -97,8 +90,6 @@ export class CustomersService {
         take: limit,
         skip: offset,
       });
-
-      return { customers };
     } catch (error) {
       this.handleDBExceptions(error);
     }
@@ -177,11 +168,8 @@ export class CustomersService {
     if (customer.user.id !== user.id)
       throw new ForbiddenException('acceso no permitido');
 
-    customer.isActive = false;
-
     try {
-      await this.customerRepository.update(id, customer);
-      return customer;
+      await this.customerRepository.delete(id);
     } catch (error) {
       this.handleDBExceptions(error);
     }

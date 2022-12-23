@@ -45,7 +45,7 @@ export class AuthController {
     return this.authService.login(loginUserDto);
   }
 
-  @Get('perfil')
+  @Get('profile')
   @Auth()
   getPerfil(@GetUser() user: User) {
     return this.authService.getPerfil(user);
@@ -71,7 +71,7 @@ export class AuthController {
 
   @Get('confirmAccount/:token')
   confirmAccount(@Param('token') token: string) {
-    return this.authService.confirmAccount(token);
+    return this.authService. confirmAccount(token);
   }
 
 

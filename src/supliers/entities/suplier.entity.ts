@@ -46,6 +46,10 @@ export class Suplier {
   })
   isActive: boolean;
 
+
+  @Column('text')
+  address2: string;
+
   @IsObject()
   @OneToOne(() => SuplierAddress)
   @JoinColumn()

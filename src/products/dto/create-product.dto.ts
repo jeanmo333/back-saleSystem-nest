@@ -11,6 +11,11 @@ import {
 } from 'class-validator';
 
 export class CreateProductDto {
+ 
+  @IsString()
+  @IsOptional()
+  id?: string;
+
   @IsString({ message: 'must be a string' })
   @MinLength(1, { message: 'minimo un caracter' })
   name: string;
@@ -43,5 +48,5 @@ export class CreateProductDto {
 
   @IsString()
   @IsOptional()
-  suplier?: string;
+  supplier?: string;
 }

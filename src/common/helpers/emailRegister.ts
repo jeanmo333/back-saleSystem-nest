@@ -31,13 +31,13 @@ const emailRegister = async (data:dataMail) => {
     text: "Comprueba tu cuenta en AMATEC",
     html: `<p>Hola: ${name}, comprueba tu cuenta en AMATEC.</p>
         <p>Tu cuenta ya esta lista, solo debes comprobarla en el siguiente enlace:
-        <a href="${process.env.FRONTEND_URL}/auth/confirmAccount/${token}">Comprobar Cuenta</a> </p>
+        <a href="${process.env.FRONTEND_URL}/confirm-account/${token}">Comprobar Cuenta</a> </p>
 
         <p>Si tu no creaste esta cuenta, puedes ignorar este mensaje</p>
     `,
   });
 
-  console.log("Mensaje enviado: %s", info.messageId);
+  // console.log("Mensaje enviado: %s", info.messageId);
 };
 
 export default emailRegister;

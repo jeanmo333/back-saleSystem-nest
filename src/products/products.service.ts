@@ -33,32 +33,29 @@ export class ProductsService {
   ) {}
 
   async create(createProductDto: CreateProductDto, user: User) {
-    const { category, suplier, ...rest } = createProductDto;
+    const { category, supplier, ...rest } = createProductDto;
     rest.name = rest.name.toLowerCase();
 
     if (!isUUID(category)) {
-      throw new BadRequestException(`category with id: ${category} not valid`);
+      throw new BadRequestException('Categoria no valida');
     }
 
-    if (!isUUID(suplier)) {
-      throw new BadRequestException(`suplier with id: ${suplier} not valid`);
+    if (!isUUID(supplier)) {
+      throw new BadRequestException('Proveedor no valido');
     }
 
     const ProductFound = await this.productRepository.findOneBy({
       name: rest.name,
     });
-    if (ProductFound)
-      throw new BadRequestException(
-        `product with name: ${rest.name} already exit`,
-      );
+    if (ProductFound) throw new BadRequestException('Producto ya existe');
 
     const categoryDb = await this.categoryRepository.findOneBy({
       id: category,
     });
-    if (!categoryDb) throw new NotFoundException(`category not found`);
+    if (!categoryDb) throw new NotFoundException('categoria no existe');
 
-    const suplierDb = await this.suplierRepository.findOneBy({ id: suplier });
-    if (!suplierDb) throw new NotFoundException(`suplier not found`);
+    const suplierDb = await this.suplierRepository.findOneBy({ id: supplier });
+    if (!suplierDb) throw new NotFoundException('proveedor no existe');
 
     try {
       const product = new Product();
@@ -70,10 +67,10 @@ export class ProductsService {
       product.isActive = rest.isActive;
       product.category = categoryDb;
       product.suplier = suplierDb;
-      product.user=user;
-      await this.productRepository.save(product);
+      product.user = user;
 
-      return  product ;
+      const productSave = await this.productRepository.save(product);
+      return { productSave, message: 'Agregado con exito' };
     } catch (error) {
       this.handleDBExceptions(error);
     }
@@ -82,10 +79,10 @@ export class ProductsService {
   async findAll(paginationDto: PaginationDto, user: User) {
     const { limit = 10, offset = 0 } = paginationDto;
     try {
-      const products = await this.productRepository.find({
+      return await this.productRepository.find({
         where: {
           isActive: true,
-          user: { id: user.id }
+          user: { id: user.id },
         },
         relations: {
           category: true,
@@ -94,8 +91,6 @@ export class ProductsService {
         take: limit,
         skip: offset,
       });
-
-      return {products}
     } catch (error) {
       this.handleDBExceptions(error);
     }
@@ -106,7 +101,7 @@ export class ProductsService {
 
     if (isUUID(term)) {
       product = await this.productRepository.findOne({
-        where: { id: term,  user: { id: user.id } },
+        where: { id: term, user: { id: user.id } },
         relations: {
           category: true,
           suplier: true,
@@ -114,7 +109,7 @@ export class ProductsService {
       });
     } else {
       product = await this.productRepository.findOne({
-        where: { name: term.toLowerCase(),  user: { id: user.id } },
+        where: { name: term.toLowerCase(), user: { id: user.id } },
         relations: {
           category: true,
           suplier: true,
@@ -125,49 +120,43 @@ export class ProductsService {
     if (!product) throw new NotFoundException('product not found');
 
     if (product.user.id !== user.id)
-    throw new ForbiddenException('acceso no permitido');
+      throw new ForbiddenException('acceso no permitido');
 
     if (product.isActive === false)
       throw new NotFoundException('product is not active');
 
-    return product;
+    return {product};
   }
 
   async update(id: string, updateProductDto: UpdateProductDto, user: User) {
-    const { category, suplier, ...rest } = updateProductDto;
+    const { category, supplier, ...rest } = updateProductDto;
     rest.name = rest.name.toLowerCase();
 
     if (!isUUID(category)) {
-      throw new BadRequestException(`category with id: ${category} not valid`);
+      throw new BadRequestException('Categoria no valida');
     }
 
-    if (!isUUID(suplier)) {
-      throw new BadRequestException(`suplier with id: ${suplier} not valid`);
+    if (!isUUID(supplier)) {
+      throw new BadRequestException('Proveedor no valido');
     }
 
     if (!isUUID(id)) {
-      throw new BadRequestException(`product with id: ${id} not valid`);
+      throw new BadRequestException('producto no valido');
     }
 
-    const productId = await this.productRepository.findOneBy({ id });
-    if (!productId)
-      throw new NotFoundException(`product with id: ${id} not found`);
+    const product = await this.productRepository.findOneBy({ id });
+    if (!product) throw new NotFoundException('producto no existe');
 
     const categoryDb = await this.categoryRepository.findOneBy({
       id: category,
     });
-    if (!categoryDb) throw new NotFoundException(`category not found`);
+    if (!categoryDb) throw new NotFoundException('categoria no existe');
 
-    const suplierDb = await this.suplierRepository.findOneBy({ id: suplier });
-    if (!suplierDb) throw new NotFoundException(`suplier not found`);
-
-
-    const product = await this.productRepository.findOneBy({ id });
-    if (!product) throw new NotFoundException('product not found');
-
+    const suplierDb = await this.suplierRepository.findOneBy({ id: supplier });
+    if (!suplierDb) throw new NotFoundException('proveedor no existe');
 
     if (product.user.id !== user.id)
-    throw new ForbiddenException('acceso no permitido');
+      throw new ForbiddenException('acceso no permitido');
 
     try {
       product.name = rest.name || product.name;
@@ -175,30 +164,29 @@ export class ProductsService {
       product.purchase_price = rest.purchase_price || product.purchase_price;
       product.sale_price = rest.sale_price || product.sale_price;
       product.stock = rest.stock || product.stock;
-      product.isActive = rest.isActive ;
+      product.isActive = rest.isActive;
       product.category = categoryDb || product.category;
       product.suplier = suplierDb || product.suplier;
-     
 
       await this.productRepository.update(id, product);
-      return product;
+      const productUpdate = await this.productRepository.findOneBy({ id });
+      return { productUpdate, message: 'Editado con exito' };
     } catch (error) {
       this.handleDBExceptions(error);
     }
   }
 
-  async remove(id: string,  user: User) {
+  async remove(id: string, user: User) {
     const product = await this.productRepository.findOneBy({ id });
     if (!product) throw new NotFoundException('product not found');
 
     if (product.user.id !== user.id)
-    throw new ForbiddenException('acceso no permitido');
+      throw new ForbiddenException('acceso no permitido');
 
     product.isActive = false;
 
     try {
-      await this.productRepository.update(id, product);
-      return product;
+      await this.productRepository.delete(id);
     } catch (error) {
       this.handleDBExceptions(error);
     }

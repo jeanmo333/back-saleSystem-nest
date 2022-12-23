@@ -2,6 +2,10 @@ import { IsString, MinLength, IsEmail, IsOptional, IsObject, IsBoolean } from "c
 import { CreateAddressDto } from '../../common/dtos/create-address.dto';
 
 export class CreateCustomerDto {
+ 
+    @IsOptional()
+    @IsString()
+    id?: string;
 
     @IsString()
     @MinLength(10)
