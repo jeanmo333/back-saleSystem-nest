@@ -36,14 +36,6 @@ export class ProductsService {
     const { category, supplier, ...rest } = createProductDto;
     rest.name = rest.name.toLowerCase();
 
-    // if (!isUUID(category)) {
-    //   throw new BadRequestException('Categoria no valida');
-    // }
-
-    // if (!isUUID(supplier)) {
-    //   throw new BadRequestException('Proveedor no valido');
-    // }
-
     const ProductFound = await this.productRepository.findOneBy({
       name: rest.name,
     });
@@ -66,7 +58,7 @@ export class ProductsService {
       product.stock = rest.stock;
       product.isActive = rest.isActive;
       product.category = categoryDb;
-      product.suplier = suplierDb;
+      product.supplier = suplierDb;
       product.user = user;
 
       const productSave = await this.productRepository.save(product);
@@ -86,7 +78,7 @@ export class ProductsService {
         },
         relations: {
           category: true,
-          suplier: true,
+          supplier: true,
         },
         take: limit,
         skip: offset,
@@ -104,7 +96,7 @@ export class ProductsService {
         where: { id: term, user: { id: user.id } },
         relations: {
           category: true,
-          suplier: true,
+          supplier: true,
         },
       });
     } else {
@@ -112,7 +104,7 @@ export class ProductsService {
         where: { name: term.toLowerCase(), user: { id: user.id } },
         relations: {
           category: true,
-          suplier: true,
+          supplier: true,
         },
       });
     }
@@ -166,7 +158,7 @@ export class ProductsService {
       product.stock = rest.stock || product.stock;
       product.isActive = rest.isActive;
       product.category = categoryDb || product.category;
-      product.suplier = suplierDb || product.suplier;
+      product.supplier = suplierDb || product.supplier;
 
       await this.productRepository.update(id, product);
       const productUpdate = await this.productRepository.findOneBy({ id });

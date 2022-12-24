@@ -56,7 +56,7 @@ export class Product {
   category: Category;
 
   @ManyToOne(() => Suplier, (suplier) => suplier.product)
-  suplier: Suplier;
+  supplier: Suplier;
 
 
   @OneToMany(() => Detail, (detail) => detail.product)

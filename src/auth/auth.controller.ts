@@ -91,7 +91,7 @@ export class AuthController {
 
 /*********************************Admin********************************************** */
   
-@Post('admin/register')
+@Post('admin/register-user')
 @Auth(ValidRoles.admin)
 createUserAdmin(@Body() createUserDto: CreateUserDto) {
   return this.authService.createByAdmin(createUserDto);
@@ -102,6 +102,13 @@ createUserAdmin(@Body() createUserDto: CreateUserDto) {
   @Auth(ValidRoles.admin)
   findAll(@Query() paginationDto: PaginationDto) {
     return this.authService.findAll(paginationDto);
+  }
+
+
+  @Get('admin/users/:term')
+  @Auth(ValidRoles.admin)
+  findOneByAdmin(@Param( 'term' ) term: string) {
+    return this.authService.findOneByAdmin(term);
   }
 
 

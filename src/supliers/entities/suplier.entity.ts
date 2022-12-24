@@ -55,7 +55,7 @@ export class Suplier {
   @JoinColumn()
   address: SuplierAddress;
 
-  @OneToMany(() => Product, (product) => product.suplier)
+  @OneToMany(() => Product, (product) => product.supplier)
   product?: Product;
 
 

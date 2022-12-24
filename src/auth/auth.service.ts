@@ -21,6 +21,7 @@ import { NewPassWordDto } from './dto/newPassword.dto';
 import { PaginationDto } from 'src/common/dtos/pagination.dto';
 import emailRegister from 'src/common/helpers/emailRegister';
 import { JwtPayload } from './interfaces/jwt-payload.interface';
+import { isUUID } from 'class-validator';
 
 @Injectable()
 export class AuthService {
@@ -189,10 +190,23 @@ export class AuthService {
     throw new InternalServerErrorException('Please check server logs');
   }
 
+
+
+  private handleDBExceptions(error: any) {
+    if (error.code === '23505') throw new BadRequestException(error.detail);
+
+    this.logger.error(error);
+    // console.log(error)
+    throw new InternalServerErrorException(
+      'Unexpected error, check server logs',
+    );
+  }
+
+
 /*************************************Admin******************************************* */
 
 async createByAdmin(createUserDto: CreateUserDto) {
-  const { password, ...userData } = createUserDto;
+  const { password="123456", ...userData } = createUserDto;
   const { email } = userData;
 
   const userEmail = await this.userRepository.findOneBy({ email });
@@ -209,7 +223,7 @@ async createByAdmin(createUserDto: CreateUserDto) {
     // user.isActive= true;
     // user.token='';
 
-    await this.userRepository.save(user);
+   const userSave= await this.userRepository.save(user);
     delete user.password;
 
     // // send email
@@ -220,6 +234,7 @@ async createByAdmin(createUserDto: CreateUserDto) {
     // });
 
     return {
+      userSave,
       message: 'Revisa tu email para confirmar tu cuenta',
     };
   } catch (error) {
@@ -286,14 +301,30 @@ async createByAdmin(createUserDto: CreateUserDto) {
 
 
 
-  private handleDBExceptions(error: any) {
-    if (error.code === '23505') throw new BadRequestException(error.detail);
 
-    this.logger.error(error);
-    // console.log(error)
-    throw new InternalServerErrorException(
-      'Unexpected error, check server logs',
-    );
+  async findOneByAdmin(term: string) {
+    let user: User;
+
+    if (isUUID(term)) {
+      user = await this.userRepository.findOne({
+        where: { id: term}
+      });
+    } else {
+      user = await this.userRepository.findOne({
+        where: { name: term.toLowerCase()}
+      });
+    }
+
+    if (!user) throw new NotFoundException('usuario no existe');
+
+    if (user.isActive === false)
+      throw new NotFoundException('usuario no esta activo');
+
+    return { user };
   }
+
+
+
+
 
 }

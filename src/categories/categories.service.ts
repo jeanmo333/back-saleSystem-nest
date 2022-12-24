@@ -43,15 +43,15 @@ export class CategoriesService {
 
 
   async findAll(paginationDto: PaginationDto, user: User) {
-    const { limit = 10, offset = 0 } = paginationDto;
+   // const { limit = 50, offset = 0 } = paginationDto;
     try {
       return await this.categoryRepository.find({
         where: {
           isActive: true,
           user: { id: user.id },
         },
-        take: limit,
-        skip: offset,
+       // take: limit,
+       // skip: offset,
       });
 
     
