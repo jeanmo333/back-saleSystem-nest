@@ -52,12 +52,12 @@ export class AuthService {
       await this.userRepository.save(user);
       delete user.password;
 
-      // // send email
-      // emailRegister({
-      //   email,
-      //   name,
-      //   token: user.token,
-      // });
+      // send email
+      emailRegister({
+        email,
+        name,
+        token: user.token,
+      });
 
       return {
         message: 'Revisa tu email para confirmar tu cuenta',
