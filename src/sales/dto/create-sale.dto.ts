@@ -5,20 +5,25 @@ import {
   IsPositive,
   IsString,
 } from 'class-validator';
-import { CreateDetailDto } from 'src/common/dtos/create-detail.dto';
-import { Customer } from '../../customers/entities/customer.entity';
 import { Detail } from '../entities/detail.entity';
+import { CreateDetailDto } from './create-detail.dto';
 
 export class CreateSaleDto {
-  @IsInt()
-  @IsPositive()
-  @IsOptional()
-  discount: number;
 
   @IsString()
   @IsOptional()
-  customer: Customer;
+  id?: string;
+
+
+  @IsInt()
+  @IsPositive()
+  @IsOptional()
+  discount?: number;
+
+  @IsString()
+  @IsOptional()
+  customer?: string;
 
   @IsArray()
-  details?: Detail[];
+  details?:  Detail[];
 }

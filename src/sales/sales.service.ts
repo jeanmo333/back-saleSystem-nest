@@ -9,11 +9,13 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/auth/entities/user.entity';
 import { PaginationDto } from 'src/common/dtos/pagination.dto';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { CreateSaleDto } from './dto/create-sale.dto';
 import { UpdateSaleDto } from './dto/update-sale.dto';
 import { Detail } from './entities/detail.entity';
 import { Sale } from './entities/sale.entity';
+import { Product } from '../products/entities/product.entity';
+import { Customer } from '../customers/entities/customer.entity';
 
 @Injectable()
 export class SalesService {
@@ -25,22 +27,76 @@ export class SalesService {
 
     @InjectRepository(Detail)
     private readonly detailRepository: Repository<Detail>,
+
+    @InjectRepository(Product)
+    private readonly productRepository: Repository<Product>,
+
+    @InjectRepository(Customer)
+    private readonly customerRepository: Repository<Customer>,
   ) {}
 
-  async create(createSaleDto: CreateSaleDto,  user: User) {
+  async create(createSaleDto: CreateSaleDto, user: User) {
     const { details, ...rest } = createSaleDto;
-    const sale = this.saleRepository.create({
-      ...rest,
-      details: details.map((detail) => this.detailRepository.create(detail)),
-      user
+
+    const customerDb = await this.customerRepository.findOneBy({
+      name: rest.customer,
     });
-    try {
-      await this.saleRepository.save(sale);
-      //delete sale.user;
-      return sale;
-    } catch (error) {
-      this.handleDBExceptions(error);
-    }
+    if (!customerDb) throw new NotFoundException('cliente no existe');
+
+    /************************************************************* */
+
+    // const product_names = details.map(async (detail) => (await detail).product);
+
+      details.map(async (detailReq) =>{
+      const sale = new Sale();
+      sale.customer = customerDb;
+      //sale.details = detailsToSave;
+      sale.user=user;
+//const conversation = await Conversation.find({ where: { id: conversationId } })
+      const productsDb = await this.productRepository.findBy({
+        name: In([detailReq.product]),
+      });
+      if (!productsDb)
+        throw new NotFoundException('hay un producto que no existe no existe');
+      const detailDb = new Detail();
+      detailDb.quantity = detailReq.quantity,
+      detailDb.product = productsDb
+      detailDb.sale=sale;
+     
+      //return detailsToSave;
+
+      try {
+        await this.detailRepository.save(detailDb);
+      //  await this.saleRepository.save(sale);
+        //delete sale.user;
+          return detailDb;
+      } catch (error) {
+        console.log(error)
+       // this.handleDBExceptions(error);
+      }
+    });
+
+    // const productsDb = await this.productRepository.findBy({ name: In([product_names]) });
+    // if (!productsDb) throw new NotFoundException('proveedor no existe');
+
+    //console.log(productsDb)
+    // const newDetailSale = details.map((detail) =>
+    //   this.detailRepository.create(detail),
+    // );
+    // await this.detailRepository.save(detailsToSave);
+
+    /************************************************************* */
+   
+
+    //  const newDetailSale = details.map((detail) => this.detailRepository.create(detail));
+    //  await this.detailRepository.save(newDetailSale);
+
+    // const sale = this.saleRepository.create({
+    //   ...rest,
+    //   details: newDetailSale,
+    //   user
+    // });
+
   }
 
   async findAll(paginationDto: PaginationDto, user: User) {
@@ -48,11 +104,11 @@ export class SalesService {
     try {
       return await this.saleRepository.find({
         where: {
-          user: { id: user.id }
+          user: { id: user.id },
         },
         relations: {
           customer: true,
-          details: {  
+          details: {
             product: true,
           },
         },
@@ -68,10 +124,10 @@ export class SalesService {
     let sale: Sale;
 
     sale = await this.saleRepository.findOne({
-      where: { id,  user: { id: user.id } },
+      where: { id, user: { id: user.id } },
       relations: {
         customer: true,
-        details: {  
+        details: {
           product: true,
         },
       },
@@ -80,7 +136,7 @@ export class SalesService {
     if (!sale) throw new NotFoundException('sale not found');
 
     if (sale.user.id !== user.id)
-    throw new ForbiddenException('acceso no permitido');
+      throw new ForbiddenException('acceso no permitido');
 
     return sale;
   }

@@ -36,17 +36,18 @@ export class Sale {
   })
   customer: Customer;
 
-  @ManyToMany(() => Detail, (detail) => detail.sale, {
-    cascade: true,
-  })
+  @ManyToMany(() => Detail, (detail) => detail.sale)
   @JoinTable()
   details: Detail[];
 
   @ManyToOne(() => User, (user) => user.sale, { eager: true })
   user: User;
 
-  /*
-  @OneToMany(() => Detail, (detail) => detail.sale, {  onDelete: 'CASCADE' })
-  details?: Detail[];
-*/
+
+  // @OneToMany(() => Detail, (detail) => detail.sale)
+  // @JoinTable()
+  // details?: Promise<Detail>[];
+
+
+
 }

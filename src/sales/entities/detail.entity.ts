@@ -14,27 +14,28 @@ import { Product } from '../../products/entities/product.entity';
 
 @Entity()
 export class Detail {
+ 
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+  id?: string;
 
   @Column('int', {
     default: 0,
   })
-  amount: number;
+  quantity?: number;
 
   @ManyToOne(() => Product, (product) => product.detail, {
     onDelete: 'CASCADE',
   })
-  product?: Product;
+  product?: Product[];
 
   @ManyToMany(() => Sale, (sale) => sale.details)
   sale: Sale
 
-/*
-  @ManyToOne(() => Sale, (sale) => sale.details, {
-    cascade: true,
-  })
-  sale?: Sale;
-  */
+
+  // @ManyToOne(() => Sale, (sale) => sale.details, {
+  //   cascade: true,
+  // })
+  // sale?: Sale;
+
 
 }
