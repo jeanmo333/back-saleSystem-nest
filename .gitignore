@@ -1,10 +1,9 @@
 
 .env
 
-/postgres
-
 # compiled output
 /dist
+/postgres
 /node_modules
 
 
