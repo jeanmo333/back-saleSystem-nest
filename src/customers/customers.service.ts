@@ -32,7 +32,7 @@ export class CustomersService {
     const { rut, phone, email, web } = createCustomerDto;
 
     const customerRut = await this.customerRepository.findOneBy({ rut });
-    if (customerRut) throw new BadRequestException('Cliente ya existe');
+    if (customerRut) throw new BadRequestException('Rut cliente ya existe');
 
     const customerPhone = await this.customerRepository.findOneBy({ phone });
     if (customerPhone)
