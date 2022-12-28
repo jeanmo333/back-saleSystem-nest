@@ -21,7 +21,7 @@ export class CreateCustomerDto {
     email: string;
 
     @IsString()
-    @MinLength(9)
+    @MinLength(9,{message:"telefono minimo 9 digitos"})
     phone: string;
 
 
