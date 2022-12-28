@@ -1,5 +1,7 @@
 import {
   BadRequestException,
+  forwardRef,
+  Inject,
   Injectable,
   InternalServerErrorException,
   Logger,
@@ -22,6 +24,13 @@ import { PaginationDto } from 'src/common/dtos/pagination.dto';
 import emailRegister from 'src/common/helpers/emailRegister';
 import { JwtPayload } from './interfaces/jwt-payload.interface';
 import { isUUID } from 'class-validator';
+import { Sale } from '../sales/entities/sale.entity';
+import { Suplier } from '../supliers/entities/suplier.entity';
+import { SupliersService } from '../supliers/supliers.service';
+import { CategoriesService } from '../categories/categories.service';
+import { ProductsService } from '../products/products.service';
+import { CustomersService } from '../customers/customers.service';
+import { SalesService } from 'src/sales/sales.service';
 
 @Injectable()
 export class AuthService {
@@ -30,6 +39,25 @@ export class AuthService {
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
+
+    @Inject(forwardRef(() => SupliersService))
+    private supplierService: SupliersService,
+
+    @Inject(forwardRef(() => ProductsService))
+    private productsService: ProductsService,
+
+
+    @Inject(forwardRef(() => CategoriesService))
+    private categoriesService: CategoriesService,
+
+
+    @Inject(forwardRef(() => CustomersService))
+    private customersService: CustomersService,
+
+
+    @Inject(forwardRef(() => SalesService))
+    private salesService: SalesService,
+
 
     private readonly jwtService: JwtService,
   ) {}
@@ -66,6 +94,40 @@ export class AuthService {
       this.handleDBErrors(error);
     }
   }
+
+
+
+  async dashboard(user: User) {
+    const [
+      numberOfSuppliers,
+      numberOfCategories,
+      numberOfProducts,
+      numberOfCustomers,
+      numberOfSales,
+      productsWithNoInventory,
+      lowInventory
+  ] = await Promise.all([
+    this.supplierService.numberOfSuppliers(user),
+    this.categoriesService.numberOfCategories(user),
+    this.productsService.numberOfProducts(user),
+    this.categoriesService.numberOfCategories(user),
+    this.salesService.numberOfSales(user),
+   this.productsService.productsWithNoInventory(user), 
+   this.productsService.lowInventory(user),
+  ]);
+  
+   return {
+    numberOfSuppliers,
+    numberOfCategories,
+    numberOfProducts,
+    numberOfCustomers,
+    numberOfSales,
+    productsWithNoInventory,
+    lowInventory
+   } ;
+  }
+
+  
 
   async login(loginUserDto: LoginUserDto) {
     const { password, email } = loginUserDto;

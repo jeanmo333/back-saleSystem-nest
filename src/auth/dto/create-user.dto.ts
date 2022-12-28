@@ -19,7 +19,7 @@ export class CreateUserDto {
   email: string;
 
   @IsString()
-  @MinLength(6)
+  @MinLength(6, {message: "Password minimo 6 carecteres"})
   password: string;
 
   @IsString()

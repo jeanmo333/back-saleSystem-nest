@@ -41,6 +41,15 @@ export class AuthController {
     return this.authService.create(createUserDto);
   }
 
+
+
+  @Get('dashboard')
+  @Auth()
+  dashboard( @GetUser() user: User) {
+    return this.authService.dashboard(user);
+  }
+
+
   @Post('login')
   loginUser(@Body() loginUserDto: LoginUserDto) {
     return this.authService.login(loginUserDto);

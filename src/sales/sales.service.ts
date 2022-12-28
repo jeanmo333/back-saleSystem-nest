@@ -47,32 +47,31 @@ export class SalesService {
 
     // const product_names = details.map(async (detail) => (await detail).product);
 
-      details.map(async (detailReq) =>{
+    details.map(async (detailReq) => {
       const sale = new Sale();
       sale.customer = customerDb;
       //sale.details = detailsToSave;
-      sale.user=user;
-//const conversation = await Conversation.find({ where: { id: conversationId } })
+      sale.user = user;
+      //const conversation = await Conversation.find({ where: { id: conversationId } })
       const productsDb = await this.productRepository.findBy({
         name: In([detailReq.product]),
       });
       if (!productsDb)
         throw new NotFoundException('hay un producto que no existe no existe');
       const detailDb = new Detail();
-      detailDb.quantity = detailReq.quantity,
-      detailDb.product = productsDb
-      detailDb.sale=sale;
-     
+      (detailDb.quantity = detailReq.quantity), (detailDb.product = productsDb);
+      detailDb.sale = sale;
+
       //return detailsToSave;
 
       try {
         await this.detailRepository.save(detailDb);
-      //  await this.saleRepository.save(sale);
+        //  await this.saleRepository.save(sale);
         //delete sale.user;
-          return detailDb;
+        return detailDb;
       } catch (error) {
-        console.log(error)
-       // this.handleDBExceptions(error);
+        console.log(error);
+        // this.handleDBExceptions(error);
       }
     });
 
@@ -86,7 +85,6 @@ export class SalesService {
     // await this.detailRepository.save(detailsToSave);
 
     /************************************************************* */
-   
 
     //  const newDetailSale = details.map((detail) => this.detailRepository.create(detail));
     //  await this.detailRepository.save(newDetailSale);
@@ -96,7 +94,18 @@ export class SalesService {
     //   details: newDetailSale,
     //   user
     // });
+  }
 
+  async numberOfSales(user: User) {
+    try {
+      return await this.saleRepository.count({
+        where: {
+          user: { id: user.id },
+        },
+      });
+    } catch (error) {
+      this.handleDBExceptions(error);
+    }
   }
 
   async findAll(paginationDto: PaginationDto, user: User) {

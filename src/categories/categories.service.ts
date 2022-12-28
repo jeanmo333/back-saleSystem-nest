@@ -42,16 +42,31 @@ export class CategoriesService {
   }
 
 
+  async numberOfCategories(user: User) {
+    try {
+      return await this.categoryRepository.count({
+        where: {
+          isActive: true,
+          user: { id: user.id },
+        },
+      });
+    } catch (error) {
+      this.handleDBExceptions(error);
+    }
+  }
+
+
+
   async findAll(paginationDto: PaginationDto, user: User) {
-   // const { limit = 50, offset = 0 } = paginationDto;
+    const { limit = 50, offset = 0 } = paginationDto;
     try {
       return await this.categoryRepository.find({
         where: {
           isActive: true,
           user: { id: user.id },
         },
-       // take: limit,
-       // skip: offset,
+        take: limit,
+       skip: offset,
       });
 
     

@@ -7,7 +7,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { LessThan, Repository } from 'typeorm';
 import { validate as isUUID } from 'uuid';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
@@ -68,6 +68,55 @@ export class ProductsService {
     }
   }
 
+  
+  async productsWithNoInventory(user: User) {
+    try {
+      return await this.productRepository.count({
+        where: {
+          stock:0,
+          isActive: true,
+          user: { id: user.id },
+        },
+      });
+    } catch (error) {
+      this.handleDBExceptions(error);
+    }
+  }
+
+
+
+  async lowInventory(user: User) {
+    try {
+      return await this.productRepository.count({
+        where: {
+          stock: LessThan(10)  ,
+          isActive: true,
+          user: { id: user.id },
+        },
+      });
+    } catch (error) {
+      this.handleDBExceptions(error);
+    }
+  }
+
+
+
+
+  async numberOfProducts(user: User) {
+    try {
+      return await this.productRepository.count({
+        where: {
+          isActive: true,
+          user: { id: user.id },
+        },
+      });
+    } catch (error) {
+      this.handleDBExceptions(error);
+    }
+  }
+
+
+
   async findAll(paginationDto: PaginationDto, user: User) {
     const { limit = 10, offset = 0 } = paginationDto;
     try {
@@ -124,14 +173,6 @@ export class ProductsService {
     const { category, supplier, ...rest } = updateProductDto;
     rest.name = rest.name.toLowerCase();
 
-    if (!isUUID(category)) {
-      throw new BadRequestException('Categoria no valida');
-    }
-
-    if (!isUUID(supplier)) {
-      throw new BadRequestException('Proveedor no valido');
-    }
-
     if (!isUUID(id)) {
       throw new BadRequestException('producto no valido');
     }
@@ -140,11 +181,11 @@ export class ProductsService {
     if (!product) throw new NotFoundException('producto no existe');
 
     const categoryDb = await this.categoryRepository.findOneBy({
-      id: category,
+      name: category,
     });
     if (!categoryDb) throw new NotFoundException('categoria no existe');
 
-    const suplierDb = await this.suplierRepository.findOneBy({ id: supplier });
+    const suplierDb = await this.suplierRepository.findOneBy({ name: supplier });
     if (!suplierDb) throw new NotFoundException('proveedor no existe');
 
     if (product.user.id !== user.id)

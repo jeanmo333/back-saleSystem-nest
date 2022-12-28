@@ -76,6 +76,22 @@ export class CustomersService {
     }
   }
 
+
+  async numberOfCustomers(user: User) {
+    try {
+      return await this.customerRepository.count({
+        where: {
+          isActive: true,
+          user: { id: user.id },
+        },
+      });
+    } catch (error) {
+      this.handleDBExceptions(error);
+    }
+  }
+
+
+
   async findAll(paginationDto: PaginationDto, user: User) {
     const { limit = 10, offset = 0 } = paginationDto;
     try {

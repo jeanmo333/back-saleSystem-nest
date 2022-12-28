@@ -34,7 +34,6 @@ export class CreateProductDto {
   sale_price: number;
 
   @IsInt()
-  @IsPositive()
   @IsOptional()
   stock?: number;
 

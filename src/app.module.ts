@@ -5,10 +5,10 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { CategoriesModule } from './categories/categories.module';
 import { ProductsModule } from './products/products.module';
-import { SupliersModule } from './supliers/supliers.module';
 import { CustomersModule } from './customers/customers.module';
 import { SalesModule } from './sales/sales.module';
 import { AuthModule } from './auth/auth.module';
+import { SupliersModule } from './supliers/supliers.module';
 
 @Module({
   imports: [

@@ -1,11 +1,13 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { CustomersService } from './customers.service';
 import { CustomersController } from './customers.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Customer } from './entities/customer.entity';
 import { CustomerAddress } from './entities/customer-address.entity';
-import { PassportModule } from '@nestjs/passport';
 import { AuthModule } from 'src/auth/auth.module';
+import { SupliersModule } from 'src/supliers/supliers.module';
+import { CategoriesModule } from 'src/categories/categories.module';
+import { SalesModule } from 'src/sales/sales.module';
 
 @Module({
   controllers: [CustomersController],
@@ -13,8 +15,11 @@ import { AuthModule } from 'src/auth/auth.module';
 
   imports: [
     TypeOrmModule.forFeature([ Customer, CustomerAddress ]),
-    AuthModule
-   // PassportModule.register({ defaultStrategy:'jwt'}),
+    forwardRef(() => CategoriesModule),
+    forwardRef(() => SupliersModule),
+    forwardRef(() => CustomersModule),
+    forwardRef(() => SalesModule),
+    forwardRef(() => AuthModule)
   ],
 
   exports: [
