@@ -46,18 +46,14 @@ export class AuthService {
     @Inject(forwardRef(() => ProductsService))
     private productsService: ProductsService,
 
-
     @Inject(forwardRef(() => CategoriesService))
     private categoriesService: CategoriesService,
-
 
     @Inject(forwardRef(() => CustomersService))
     private customersService: CustomersService,
 
-
     @Inject(forwardRef(() => SalesService))
     private salesService: SalesService,
-
 
     private readonly jwtService: JwtService,
   ) {}
@@ -95,8 +91,6 @@ export class AuthService {
     }
   }
 
-
-
   async dashboard(user: User) {
     const [
       numberOfSuppliers,
@@ -105,29 +99,27 @@ export class AuthService {
       numberOfCustomers,
       numberOfSales,
       productsWithNoInventory,
-      lowInventory
-  ] = await Promise.all([
-    this.supplierService.numberOfSuppliers(user),
-    this.categoriesService.numberOfCategories(user),
-    this.productsService.numberOfProducts(user),
-    this.categoriesService.numberOfCategories(user),
-    this.salesService.numberOfSales(user),
-   this.productsService.productsWithNoInventory(user), 
-   this.productsService.lowInventory(user),
-  ]);
-  
-   return {
-    numberOfSuppliers,
-    numberOfCategories,
-    numberOfProducts,
-    numberOfCustomers,
-    numberOfSales,
-    productsWithNoInventory,
-    lowInventory
-   } ;
-  }
+      lowInventory,
+    ] = await Promise.all([
+      this.supplierService.numberOfSuppliers(user),
+      this.categoriesService.numberOfCategories(user),
+      this.productsService.numberOfProducts(user),
+      this.categoriesService.numberOfCategories(user),
+      this.salesService.numberOfSales(user),
+      this.productsService.productsWithNoInventory(user),
+      this.productsService.lowInventory(user),
+    ]);
 
-  
+    return {
+      numberOfSuppliers,
+      numberOfCategories,
+      numberOfProducts,
+      numberOfCustomers,
+      numberOfSales,
+      productsWithNoInventory,
+      lowInventory,
+    };
+  }
 
   async login(loginUserDto: LoginUserDto) {
     const { password, email } = loginUserDto;
@@ -178,11 +170,10 @@ export class AuthService {
     }
   }
 
-
   async confirmAccount(token: string) {
     const userConfirm = await this.userRepository.findOneBy({ token });
 
-   if (!userConfirm) throw new NotFoundException('Token no válido');
+    if (!userConfirm) throw new NotFoundException('Token no válido');
 
     try {
       userConfirm.token = '';
@@ -192,7 +183,7 @@ export class AuthService {
       return { message: 'Cuenta confirmado con exito' };
     } catch (error) {
       console.log(error);
-      throw new BadRequestException("no se puede confirmar la cuenta")
+      throw new BadRequestException('no se puede confirmar la cuenta');
     }
   }
 
@@ -252,8 +243,6 @@ export class AuthService {
     throw new InternalServerErrorException('Please check server logs');
   }
 
-
-
   private handleDBExceptions(error: any) {
     if (error.code === '23505') throw new BadRequestException(error.detail);
 
@@ -264,47 +253,44 @@ export class AuthService {
     );
   }
 
+  /*************************************Admin******************************************* */
 
-/*************************************Admin******************************************* */
+  async createByAdmin(createUserDto: CreateUserDto) {
+    const { password = '123456', ...userData } = createUserDto;
+    const { email } = userData;
 
-async createByAdmin(createUserDto: CreateUserDto) {
-  const { password="123456", ...userData } = createUserDto;
-  const { email } = userData;
+    const userEmail = await this.userRepository.findOneBy({ email });
+    if (userEmail) {
+      throw new BadRequestException('Este email ya existe');
+    }
 
-  const userEmail = await this.userRepository.findOneBy({ email });
-  if (userEmail) {
-    throw new BadRequestException('Este email ya existe');
+    try {
+      const user = this.userRepository.create({
+        ...userData,
+        password: bcrypt.hashSync(password, 10),
+      });
+
+      // user.isActive= true;
+      // user.token='';
+
+      const userSave = await this.userRepository.save(user);
+      delete user.password;
+
+      // // send email
+      // emailRegister({
+      //   email,
+      //   name,
+      //   token: user.token,
+      // });
+
+      return {
+        userSave,
+        message: 'Revisa tu email para confirmar tu cuenta',
+      };
+    } catch (error) {
+      this.handleDBErrors(error);
+    }
   }
-
-  try {
-    const user = this.userRepository.create({
-      ...userData,
-      password: bcrypt.hashSync(password, 10),
-    });
-
-    // user.isActive= true;
-    // user.token='';
-
-   const userSave= await this.userRepository.save(user);
-    delete user.password;
-
-    // // send email
-    // emailRegister({
-    //   email,
-    //   name,
-    //   token: user.token,
-    // });
-
-    return {
-      userSave,
-      message: 'Revisa tu email para confirmar tu cuenta',
-    };
-  } catch (error) {
-    this.handleDBErrors(error);
-  }
-}
-
-
 
   async findAll(paginationDto: PaginationDto) {
     const { limit = 10, offset = 0 } = paginationDto;
@@ -325,12 +311,10 @@ async createByAdmin(createUserDto: CreateUserDto) {
     }
   }
 
-
-
   async updateByAdmin(id: string, updateUserDto: UpdateUserDto) {
     const { password, ...userData } = updateUserDto;
 
-    userData.name= userData.name.toLowerCase();
+    userData.name = userData.name.toLowerCase();
 
     const userId = await this.userRepository.findOneBy({ id });
     if (!userId) throw new NotFoundException('customer not found');
@@ -340,9 +324,9 @@ async createByAdmin(createUserDto: CreateUserDto) {
         ...userData,
         password: bcrypt.hashSync(password, 10),
       });
-  
+
       await this.userRepository.update(id, userSave);
-   
+
       const userUpdate = await this.userRepository.findOneBy({ id });
       return { userUpdate, message: 'Editado con exito' };
     } catch (error) {
@@ -361,19 +345,16 @@ async createByAdmin(createUserDto: CreateUserDto) {
     }
   }
 
-
-
-
   async findOneByAdmin(term: string) {
     let user: User;
 
     if (isUUID(term)) {
       user = await this.userRepository.findOne({
-        where: { id: term}
+        where: { id: term },
       });
     } else {
       user = await this.userRepository.findOne({
-        where: { name: term.toLowerCase()}
+        where: { name: term.toLowerCase() },
       });
     }
 
@@ -384,9 +365,4 @@ async createByAdmin(createUserDto: CreateUserDto) {
 
     return { user };
   }
-
-
-
-
-
 }
