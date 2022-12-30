@@ -43,57 +43,40 @@ export class SalesService {
     });
     if (!customerDb) throw new NotFoundException('cliente no existe');
 
-    /************************************************************* */
-
-    // const product_names = details.map(async (detail) => (await detail).product);
-
-    details.map(async (detailReq) => {
-      const sale = new Sale();
-      sale.customer = customerDb;
-      //sale.details = detailsToSave;
-      sale.user = user;
-      //const conversation = await Conversation.find({ where: { id: conversationId } })
-      const productsDb = await this.productRepository.findBy({
-        name: In([detailReq.product]),
-      });
-      if (!productsDb)
-        throw new NotFoundException('hay un producto que no existe no existe');
+    const newDetailSale = details.map((detail) => {
       const detailDb = new Detail();
-      (detailDb.quantity = detailReq.quantity), (detailDb.product = productsDb);
-      detailDb.sale = sale;
+      detailDb.product = detail.product 
+      detailDb.quantity = detail.quantity
 
-      //return detailsToSave;
-
-      try {
-        await this.detailRepository.save(detailDb);
-        //  await this.saleRepository.save(sale);
-        //delete sale.user;
-        return detailDb;
-      } catch (error) {
-        console.log(error);
-        // this.handleDBExceptions(error);
-      }
+      return detailDb;
+      //detailDb.sale=detail.sale
     });
 
-    // const productsDb = await this.productRepository.findBy({ name: In([product_names]) });
-    // if (!productsDb) throw new NotFoundException('proveedor no existe');
+     await this.detailRepository.save(newDetailSale);
+    const sale = new Sale();
+    sale.customer = customerDb;
+    sale.user = user;
+    sale.discount = rest.discount;
+    sale.details=newDetailSale
 
-    //console.log(productsDb)
-    // const newDetailSale = details.map((detail) =>
-    //   this.detailRepository.create(detail),
-    // );
-    // await this.detailRepository.save(detailsToSave);
 
-    /************************************************************* */
+  
+     
+    // await this.detailRepository.save(newDetailSale);
 
-    //  const newDetailSale = details.map((detail) => this.detailRepository.create(detail));
-    //  await this.detailRepository.save(newDetailSale);
+  //  sale=  await this.saleRepository.create({
+  //     ...rest,
+  //     details: newDetailSale,
+  //     user
+  //   });
+    try {
+      const savedSale = await this.saleRepository.save(sale);
+      return savedSale;
+    } catch (error) {
+      console.log(error);
+      this.handleDBExceptions(error);
+    }
 
-    // const sale = this.saleRepository.create({
-    //   ...rest,
-    //   details: newDetailSale,
-    //   user
-    // });
   }
 
   async numberOfSales(user: User) {

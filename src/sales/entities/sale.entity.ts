@@ -36,18 +36,21 @@ export class Sale {
   })
   customer: Customer;
 
-  @ManyToMany(() => Detail, (detail) => detail.sale)
+  @ManyToMany(() => Detail)
   @JoinTable()
   details: Detail[];
+
+  // @ManyToMany(() => Detail)
+  // @JoinTable()
+  // details: Detail[];
 
   @ManyToOne(() => User, (user) => user.sale, { eager: true })
   user: User;
 
 
-  // @OneToMany(() => Detail, (detail) => detail.sale)
-  // @JoinTable()
-  // details?: Promise<Detail>[];
 
+  // @ManyToOne(() => Detail, (detail) => detail.sale)
+  //  details?:  Detail[];
 
-
+ 
 }

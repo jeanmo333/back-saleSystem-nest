@@ -1,6 +1,7 @@
 import {
   Column,
   Entity,
+  FindOperator,
   JoinColumn,
   ManyToMany,
   ManyToOne,
@@ -26,16 +27,15 @@ export class Detail {
   @ManyToOne(() => Product, (product) => product.detail, {
     onDelete: 'CASCADE',
   })
-  product?: Product[];
+  product?:  string | FindOperator<string>;
 
-  @ManyToMany(() => Sale, (sale) => sale.details)
-  sale: Sale
+  // @ManyToMany(() => Sale, (sale) => sale.details)
+  // sale: Sale
 
-
-  // @ManyToOne(() => Sale, (sale) => sale.details, {
-  //   cascade: true,
-  // })
+  // @OneToMany(() => Sale, (sale) => sale.details)
   // sale?: Sale;
+
+
 
 
 }
