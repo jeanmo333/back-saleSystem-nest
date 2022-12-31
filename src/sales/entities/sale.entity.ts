@@ -31,18 +31,25 @@ export class Sale {
   })
   discount: number;
 
+
+  @Column('float', {
+    default: 0,
+  })
+  total: number;
+
   @ManyToOne(() => Customer, (customer) => customer.sale, {
     onDelete: 'CASCADE',
   })
   customer: Customer;
 
+
+//   @ManyToMany(() => Detail, (detail) => detail.sale)
+//  // @JoinTable()
+//   details: Detail[];
+
   @ManyToMany(() => Detail)
   @JoinTable()
   details: Detail[];
-
-  // @ManyToMany(() => Detail)
-  // @JoinTable()
-  // details: Detail[];
 
   @ManyToOne(() => User, (user) => user.sale, { eager: true })
   user: User;

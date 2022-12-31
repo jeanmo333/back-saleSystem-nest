@@ -3,6 +3,7 @@ import {
   Entity,
   FindOperator,
   JoinColumn,
+  JoinTable,
   ManyToMany,
   ManyToOne,
   OneToMany,
@@ -27,7 +28,11 @@ export class Detail {
   @ManyToOne(() => Product, (product) => product.detail, {
     onDelete: 'CASCADE',
   })
-  product?:  string | FindOperator<string>;
+  product?:  string ;
+
+  // @ManyToMany(() => Sale, (sale) => sale.details)
+  // @JoinTable()
+  // sale: Sale;
 
   // @ManyToMany(() => Sale, (sale) => sale.details)
   // sale: Sale

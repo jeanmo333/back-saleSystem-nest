@@ -1,6 +1,7 @@
 import {
   IsArray,
   IsInt,
+  IsNumber,
   IsOptional,
   IsPositive,
   IsString,
@@ -23,6 +24,11 @@ export class CreateSaleDto {
   @IsString()
   @IsOptional()
   customer?: string;
+
+
+  @IsNumber()
+  @IsOptional()
+  total?:  number;
 
   @IsArray()
   details?:  Detail[];

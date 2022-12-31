@@ -38,6 +38,31 @@ export class SalesService {
   async create(createSaleDto: CreateSaleDto, user: User) {
     const { details, ...rest } = createSaleDto;
 
+    const increaseStock = async (idPro: string, quantity: number) => {
+      const { stock } = await this.productRepository.findOneBy({ id: idPro  });
+      const newStock = stock + quantity;
+      await this.productRepository.update({ id: idPro }, { stock: newStock });
+    };
+
+    const decreaseStock = async (idPro: string, quantity: number) => {
+      const { stock, name } = await this.productRepository.findOneBy({
+        id: idPro,
+      });
+      // if (stock < quantity)
+      //   throw new BadRequestException(
+      //     `producto ${name} no tiene stock suficiente`,
+      //   );
+      const newStock = stock - quantity;
+      
+      try {
+        await this.productRepository.update({ id: idPro }, { stock: newStock });
+      } catch (error) {
+       // console.log(error);
+        this.handleDBExceptions(error);
+      }
+     
+    };
+
     const customerDb = await this.customerRepository.findOneBy({
       name: rest.customer,
     });
@@ -45,30 +70,20 @@ export class SalesService {
 
     const newDetailSale = details.map((detail) => {
       const detailDb = new Detail();
-      detailDb.product = detail.product 
-      detailDb.quantity = detail.quantity
-
+      detailDb.product = detail.product;
+      detailDb.quantity = detail.quantity;
+      decreaseStock(detail.product, detail.quantity);
       return detailDb;
-      //detailDb.sale=detail.sale
     });
-
-     await this.detailRepository.save(newDetailSale);
+    await this.detailRepository.save(newDetailSale);
+    
     const sale = new Sale();
     sale.customer = customerDb;
     sale.user = user;
     sale.discount = rest.discount;
+    sale.total = rest.total;
     sale.details=newDetailSale
 
-
-  
-     
-    // await this.detailRepository.save(newDetailSale);
-
-  //  sale=  await this.saleRepository.create({
-  //     ...rest,
-  //     details: newDetailSale,
-  //     user
-  //   });
     try {
       const savedSale = await this.saleRepository.save(sale);
       return savedSale;
@@ -76,7 +91,6 @@ export class SalesService {
       console.log(error);
       this.handleDBExceptions(error);
     }
-
   }
 
   async numberOfSales(user: User) {
