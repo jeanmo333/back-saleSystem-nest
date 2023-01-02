@@ -18,7 +18,9 @@ import { Sale } from '../entities/sale.entity';
   
     @IsString()
     @IsOptional()
-    product: Product;
+    product: string;
+
+
 
     // @IsString()
     // @IsOptional()

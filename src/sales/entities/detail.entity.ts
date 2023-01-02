@@ -13,6 +13,7 @@ import {
 import { Sale } from './sale.entity';
 import { User } from 'src/auth/entities/user.entity';
 import { Product } from '../../products/entities/product.entity';
+import { CreateDetailDto } from '../dto/create-detail.dto';
 
 @Entity()
 export class Detail {
@@ -28,7 +29,7 @@ export class Detail {
   @ManyToOne(() => Product, (product) => product.detail, {
     onDelete: 'CASCADE',
   })
-  product?:  string ;
+  product?:  string;
 
   // @ManyToMany(() => Sale, (sale) => sale.details)
   // @JoinTable()

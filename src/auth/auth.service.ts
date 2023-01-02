@@ -61,8 +61,9 @@ export class AuthService {
   async create(createUserDto: CreateUserDto) {
     const { password, ...userData } = createUserDto;
     const { email, name } = userData;
+   const emailReq = email.toLowerCase().trim();
 
-    const userEmail = await this.userRepository.findOneBy({ email });
+    const userEmail = await this.userRepository.findOneBy({ email: emailReq });
     if (userEmail) {
       throw new BadRequestException('Este email ya existe');
     }
@@ -123,9 +124,10 @@ export class AuthService {
 
   async login(loginUserDto: LoginUserDto) {
     const { password, email } = loginUserDto;
+    const emailReq = email.toLowerCase().trim();
 
     const user = await this.userRepository.findOne({
-      where: { email },
+      where: { email : emailReq },
       select: { email: true, password: true, id: true, isActive: true }, //! OJO!
     });
 

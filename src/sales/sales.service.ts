@@ -16,6 +16,7 @@ import { Detail } from './entities/detail.entity';
 import { Sale } from './entities/sale.entity';
 import { Product } from '../products/entities/product.entity';
 import { Customer } from '../customers/entities/customer.entity';
+import { CreateDetailDto } from './dto/create-detail.dto';
 
 @Injectable()
 export class SalesService {
@@ -39,7 +40,7 @@ export class SalesService {
     const { details, ...rest } = createSaleDto;
 
     const increaseStock = async (idPro: string, quantity: number) => {
-      const { stock } = await this.productRepository.findOneBy({ id: idPro  });
+      const { stock } = await this.productRepository.findOneBy({ id: idPro });
       const newStock = stock + quantity;
       await this.productRepository.update({ id: idPro }, { stock: newStock });
     };
@@ -53,14 +54,13 @@ export class SalesService {
       //     `producto ${name} no tiene stock suficiente`,
       //   );
       const newStock = stock - quantity;
-      
+
       try {
         await this.productRepository.update({ id: idPro }, { stock: newStock });
       } catch (error) {
-       // console.log(error);
+        console.log(error);
         this.handleDBExceptions(error);
       }
-     
     };
 
     const customerDb = await this.customerRepository.findOneBy({
@@ -76,13 +76,13 @@ export class SalesService {
       return detailDb;
     });
     await this.detailRepository.save(newDetailSale);
-    
+
     const sale = new Sale();
     sale.customer = customerDb;
     sale.user = user;
     sale.discount = rest.discount;
     sale.total = rest.total;
-    sale.details=newDetailSale
+    sale.details = newDetailSale;
 
     try {
       const savedSale = await this.saleRepository.save(sale);
@@ -111,6 +111,11 @@ export class SalesService {
       return await this.saleRepository.find({
         where: {
           user: { id: user.id },
+        },
+        select: {
+          customer: {
+            name: true
+          }
         },
         relations: {
           customer: true,
