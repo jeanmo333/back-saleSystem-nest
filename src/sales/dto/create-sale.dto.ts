@@ -30,6 +30,14 @@ export class CreateSaleDto {
   @IsOptional()
   total?:  number;
 
+  @IsNumber()
+  @IsOptional()
+  numberOfItems: number;
+
+  @IsNumber()
+  @IsOptional()
+  subTotal     : number;
+
   @IsArray()
   details?:  Detail[];
 }

@@ -37,6 +37,17 @@ export class Sale {
   })
   total: number;
 
+
+  @Column('int', {
+    default: 0,
+  })
+  numberOfItems: number;
+
+  @Column('float', {
+    default: 0,
+  })
+  subTotal     : number;
+
   @ManyToOne(() => Customer, (customer) => customer.sale, {
     onDelete: 'CASCADE',
   })

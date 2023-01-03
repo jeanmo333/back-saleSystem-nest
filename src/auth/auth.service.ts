@@ -158,10 +158,11 @@ export class AuthService {
 
   async update(updateUserDto: UpdateUserDto, user: User) {
     const { email, name, password } = updateUserDto;
+    const emailReq = email.toLowerCase().trim();
 
     try {
       user.name = name || user.name;
-      user.email = email || user.email;
+      user.email = emailReq || user.email;
       user.password = bcrypt.hashSync(password, 10) || user.password;
       // user.isActive = isActive;
       // user.roles = roles || user.roles;
@@ -191,8 +192,9 @@ export class AuthService {
 
   async forgetPassword(forgetDto: ForgetDto) {
     const { email } = forgetDto;
-    const userEmail = await this.userRepository.findOneBy({ email });
-
+    const emailReq = email.toLowerCase().trim();
+    
+    const userEmail = await this.userRepository.findOneBy({ email: emailReq });
     if (!userEmail) throw new NotFoundException('Este email no existe');
 
     try {
@@ -201,7 +203,7 @@ export class AuthService {
 
       // Enviar Email con instrucciones
       emailForgetPassword({
-        email,
+        email : emailReq,
         name: userEmail.name,
         token: userEmail.token,
       });
@@ -258,10 +260,11 @@ export class AuthService {
   /*************************************Admin******************************************* */
 
   async createByAdmin(createUserDto: CreateUserDto) {
-    const { password = '123456', ...userData } = createUserDto;
+    const { password="" , ...userData } = createUserDto;
     const { email } = userData;
+    const emailReq = email.toLowerCase().trim();
 
-    const userEmail = await this.userRepository.findOneBy({ email });
+    const userEmail = await this.userRepository.findOneBy({ email: emailReq });
     if (userEmail) {
       throw new BadRequestException('Este email ya existe');
     }
@@ -319,7 +322,7 @@ export class AuthService {
     userData.name = userData.name.toLowerCase();
 
     const userId = await this.userRepository.findOneBy({ id });
-    if (!userId) throw new NotFoundException('customer not found');
+    if (!userId) throw new NotFoundException('Usuario no existe');
 
     try {
       const userSave = this.userRepository.create({

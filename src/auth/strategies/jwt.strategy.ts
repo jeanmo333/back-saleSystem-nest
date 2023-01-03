@@ -32,10 +32,10 @@ export class JwtStrategy extends PassportStrategy( Strategy ) {
             const user = await this.userRepository.findOneBy({ id });
 
             if ( !user ) 
-                throw new UnauthorizedException('No autorizado')
+                throw new UnauthorizedException('token no valido')
                 
             if ( !user.isActive ) 
-                throw new UnauthorizedException('User is inactive, talk with an admin');
+                throw new UnauthorizedException('Usuario no esta activo');
             
     
             return user;

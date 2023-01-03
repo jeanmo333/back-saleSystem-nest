@@ -39,20 +39,35 @@ export class SalesService {
   async create(createSaleDto: CreateSaleDto, user: User) {
     const { details, ...rest } = createSaleDto;
 
+    let stoctDb: number;
+    let quantityReq: number;
+
     const increaseStock = async (idPro: string, quantity: number) => {
-      const { stock } = await this.productRepository.findOneBy({ id: idPro });
+
+      const { stock } = await this.productRepository.findOne({
+        where: { id : idPro },
+        select: { name: true, stock: true, id: true, isActive: true }, //! OJO!
+       });
       const newStock = stock + quantity;
       await this.productRepository.update({ id: idPro }, { stock: newStock });
     };
 
     const decreaseStock = async (idPro: string, quantity: number) => {
+      // const { stock, name } = await this.productRepository.findOne({
+      //   where: { id : idPro },
+      //   select: { name: true, stock: true, id: true, isActive: true }, //! OJO!
+      //  });
       const { stock, name } = await this.productRepository.findOneBy({
         id: idPro,
       });
-      // if (stock < quantity)
+
+    
+      // if (stock < quantity){
       //   throw new BadRequestException(
       //     `producto ${name} no tiene stock suficiente`,
       //   );
+      // }
+      
       const newStock = stock - quantity;
 
       try {
@@ -73,14 +88,18 @@ export class SalesService {
       detailDb.product = detail.product;
       detailDb.quantity = detail.quantity;
       decreaseStock(detail.product, detail.quantity);
+      
       return detailDb;
     });
+
     await this.detailRepository.save(newDetailSale);
 
     const sale = new Sale();
     sale.customer = customerDb;
     sale.user = user;
     sale.discount = rest.discount;
+    sale.numberOfItems=rest.numberOfItems;
+    sale.subTotal=rest.subTotal;
     sale.total = rest.total;
     sale.details = newDetailSale;
 
