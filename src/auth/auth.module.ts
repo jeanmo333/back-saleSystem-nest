@@ -13,36 +13,40 @@ import { ProductsModule } from 'src/products/products.module';
 import { CustomersModule } from 'src/customers/customers.module';
 import { SalesModule } from 'src/sales/sales.module';
 
-
-
 @Module({
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy ],
+  providers: [AuthService, JwtStrategy],
   imports: [
     ConfigModule,
-    TypeOrmModule.forFeature([ User]),
-    forwardRef(() =>SupliersModule),
-    forwardRef(() =>CategoriesModule),
-    forwardRef(() =>ProductsModule),
+    TypeOrmModule.forFeature([User]),
+    forwardRef(() => SupliersModule),
+    forwardRef(() => CategoriesModule),
+    forwardRef(() => ProductsModule),
     forwardRef(() => CustomersModule),
     forwardRef(() => SalesModule),
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.registerAsync({
-      imports: [ ConfigModule ],
-      inject: [ ConfigService ],
-      useFactory: ( configService: ConfigService ) => {
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => {
         // console.log('JWT Secret', configService.get('JWT_SECRET') )
         // console.log('JWT SECRET', process.env.JWT_SECRET)
         return {
           secret: configService.get('JWT_SECRET'),
           signOptions: {
-            expiresIn:'24h'
-          }
-        }
-      }
-    })
-
+            expiresIn: '24h',
+          },
+        };
+      },
+    }),
   ],
-  exports: [ TypeOrmModule, JwtStrategy, PassportModule, JwtModule, AuthModule, AuthService ]
+  exports: [
+    TypeOrmModule,
+    JwtStrategy,
+    PassportModule,
+    JwtModule,
+    AuthModule,
+    AuthService,
+  ],
 })
 export class AuthModule {}

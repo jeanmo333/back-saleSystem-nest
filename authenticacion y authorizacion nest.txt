@@ -1,0 +1,27 @@
+archivos para configurar authenticacion en nest
+
+******************************************************************
+1-una carpeta que llama strategies
+a-dentro un archivo jwt-strategy
+b-un archivo en una carpeta interface para tipar el jwt
+c-agregar en authModule en el array de providers el jwtStrategy creado. y exportar el jwtStrategy tambien
+*****************************************************************************
+
+
+******************************************************************
+2-una carpeta que llama decorators
+a- dentro un get-user.decorator
+b-crear un archivo en la carpeta decoratos o en common ke se llama 
+raw-headers.decorator
+c-crear un archivo que se llama role-protected.decorator
+d-crear un archivo auth.decorator
+
+******************************************************************
+
+
+******************************************************************
+3-una carpeta que llama guards
+a-dentro un archivo user-role.guard
+b-
+
+******************************************************************
