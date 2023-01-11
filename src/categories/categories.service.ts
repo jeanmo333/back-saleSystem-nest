@@ -26,8 +26,11 @@ export class CategoriesService {
 
   async create(createCategoryDto: CreateCategoryDto, user: User) {
     const { name } = createCategoryDto;
+    const nameReq = name.toLowerCase().trim();
 
-    const categoryName = await this.categoryRepository.findOneBy({ name });
+    const categoryName = await this.categoryRepository.findOne({
+      where: { name:nameReq, isActive: true,  user: { id: user.id } },
+      });
     if (categoryName)
       throw new BadRequestException('categoria ya existe');
     try {
