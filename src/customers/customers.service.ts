@@ -31,18 +31,31 @@ export class CustomersService {
   async create(createCustomerDto: CreateCustomerDto, user: User) {
     const { rut, phone, email, web } = createCustomerDto;
 
-    const customerRut = await this.customerRepository.findOneBy({ rut });
+    /***************************************************************** */
+    const customerRut = await this.customerRepository.findOne({
+      where: { rut, isActive: true, user: { id: user.id } },
+    });
     if (customerRut) throw new BadRequestException('Rut cliente ya existe');
+    /***************************************************************** */
 
-    const customerPhone = await this.customerRepository.findOneBy({ phone });
+    const customerPhone = await this.customerRepository.findOne({
+      where: { phone, isActive: true, user: { id: user.id } },
+    });
     if (customerPhone)
       throw new BadRequestException('Telefon cliente ya existe');
+    /***************************************************************** */
 
-    const customerEmail = await this.customerRepository.findOneBy({ email });
+    const customerEmail = await this.customerRepository.findOne({
+      where: { email, isActive: true, user: { id: user.id } },
+    });
     if (customerEmail) throw new BadRequestException('Email cliente ya existe');
+    /***************************************************************** */
 
-    const customerWeb = await this.customerRepository.findOneBy({ web });
+    const customerWeb = await this.customerRepository.findOne({
+      where: { web, isActive: true, user: { id: user.id } },
+    });
     if (customerWeb) throw new BadRequestException('web cliente ya existe');
+    /***************************************************************** */
 
     try {
       const { address, ...rest } = createCustomerDto;
@@ -76,7 +89,6 @@ export class CustomersService {
     }
   }
 
-
   async numberOfCustomers(user: User) {
     try {
       return await this.customerRepository.count({
@@ -89,8 +101,6 @@ export class CustomersService {
       this.handleDBExceptions(error);
     }
   }
-
-
 
   async findAll(paginationDto: PaginationDto, user: User) {
     const { limit = 10, offset = 0 } = paginationDto;
@@ -153,8 +163,10 @@ export class CustomersService {
 
     // await this.addressRepository.save(newAddress);
 
-    const customer = await this.customerRepository.findOneBy({ id });
-    if (!customer) throw new NotFoundException('customer not found');
+    const customer = await this.customerRepository.findOne({ 
+      where: { id, isActive: true, user: { id: user.id } },
+     });
+    if (!customer) throw new NotFoundException('Cliente no existe');
 
     if (customer.user.id !== user.id)
       throw new ForbiddenException('acceso no permitido');
@@ -170,7 +182,9 @@ export class CustomersService {
 
     try {
       await this.customerRepository.update(id, customer);
-      const customerUpdate = await this.customerRepository.findOneBy({ id });
+      const customerUpdate = await this.customerRepository.findOne({ 
+        where: { id, isActive: true, user: { id: user.id } },
+       });
       return { customerUpdate, message: 'Editado con exito' };
     } catch (error) {
       this.handleDBExceptions(error);
@@ -178,8 +192,11 @@ export class CustomersService {
   }
 
   async remove(id: string, user: User) {
-    const customer = await this.customerRepository.findOneBy({ id });
-    if (!customer) throw new NotFoundException('customer not found');
+    const customer = await this.customerRepository.findOne({ 
+      where: { id, isActive: true, user: { id: user.id } },
+     });
+
+    if (!customer) throw new NotFoundException('Cliente no existe');
 
     if (customer.user.id !== user.id)
       throw new ForbiddenException('acceso no permitido');

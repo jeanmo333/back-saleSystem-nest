@@ -36,50 +36,53 @@ export class SalesService {
     private readonly customerRepository: Repository<Customer>,
   ) {}
 
+  async increaseStock(idPro: string, quantity: number) {
+    // const increaseStock = async (idPro: string, quantity: number) => {
+
+    const { stock } = await this.productRepository.findOne({
+      where: { id: idPro },
+      select: { name: true, stock: true, id: true, isActive: true }, //! OJO!
+    });
+    const newStock = stock + quantity;
+    await this.productRepository.update({ id: idPro }, { stock: newStock });
+  }
+
+  async decreaseStock(idPro: string, quantity: number, user: User) {
+    //const decreaseStock = async (idPro: string, quantity: number) => {
+
+    const productId = await this.productRepository.findOne({
+      where: { id: idPro, user: { id: user.id } },
+      select: { name: true, stock: true, id: true, isActive: true },
+    });
+
+    //   const { stock, name } = await this.productRepository.findOneBy({
+    //     id: idPro,
+    //  });
+
+    // if (!productId)
+    //   throw new NotFoundException(`producto no existe`);
+
+    // if (productId.stock < quantity) {
+    //   throw new BadRequestException(
+    //     `producto ${productId.name} no tiene stock suficiente`,
+    //   );
+    // }
+
+    const newStock = productId.stock - quantity;
+
+    try {
+      await this.productRepository.update({ id: idPro }, { stock: newStock });
+    } catch (error) {
+      console.log(error);
+      this.handleDBExceptions(error);
+    }
+  }
+
   async create(createSaleDto: CreateSaleDto, user: User) {
     const { details, ...rest } = createSaleDto;
 
-    let stoctDb: number;
-    let quantityReq: number;
-
-    const increaseStock = async (idPro: string, quantity: number) => {
-
-      const { stock } = await this.productRepository.findOne({
-        where: { id : idPro },
-        select: { name: true, stock: true, id: true, isActive: true }, //! OJO!
-       });
-      const newStock = stock + quantity;
-      await this.productRepository.update({ id: idPro }, { stock: newStock });
-    };
-
-    const decreaseStock = async (idPro: string, quantity: number) => {
-      // const { stock, name } = await this.productRepository.findOne({
-      //   where: { id : idPro },
-      //   select: { name: true, stock: true, id: true, isActive: true }, //! OJO!
-      //  });
-      const { stock, name } = await this.productRepository.findOneBy({
-        id: idPro,
-      });
-
-    
-      // if (stock < quantity){
-      //   throw new BadRequestException(
-      //     `producto ${name} no tiene stock suficiente`,
-      //   );
-      // }
-      
-      const newStock = stock - quantity;
-
-      try {
-        await this.productRepository.update({ id: idPro }, { stock: newStock });
-      } catch (error) {
-        console.log(error);
-        this.handleDBExceptions(error);
-      }
-    };
-
-    const customerDb = await this.customerRepository.findOneBy({
-      name: rest.customer,
+    const customerDb = await this.customerRepository.findOne({
+      where: { name: rest.customer, isActive: true, user: { id: user.id } },
     });
     if (!customerDb) throw new NotFoundException('cliente no existe');
 
@@ -87,8 +90,8 @@ export class SalesService {
       const detailDb = new Detail();
       detailDb.product = detail.product;
       detailDb.quantity = detail.quantity;
-      decreaseStock(detail.product, detail.quantity);
-      
+      this.decreaseStock(detail.product, detail.quantity, user);
+
       return detailDb;
     });
 
@@ -98,8 +101,8 @@ export class SalesService {
     sale.customer = customerDb;
     sale.user = user;
     sale.discount = rest.discount;
-    sale.numberOfItems=rest.numberOfItems;
-    sale.subTotal=rest.subTotal;
+    sale.numberOfItems = rest.numberOfItems;
+    sale.subTotal = rest.subTotal;
     sale.total = rest.total;
     sale.details = newDetailSale;
 
@@ -133,8 +136,8 @@ export class SalesService {
         },
         select: {
           customer: {
-            name: true
-          }
+            name: true,
+          },
         },
         relations: {
           customer: true,

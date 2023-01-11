@@ -51,20 +51,32 @@ export class SupliersService {
   async create(createSuplierDto: CreateSuplierDto, user: User) {
     const { rut, phone, email, web } = createSuplierDto;
 
-    const suplierRut = await this.suplierRepository.findOneBy({ rut });
+    /************************************************************************** */
+    const suplierRut = await this.suplierRepository.findOne({ 
+      where: { rut, isActive: true, user: { id: user.id } },
+     });
     if (suplierRut) throw new BadRequestException('rut proveedor ya existe');
+    /************************************************************************** */
 
-    const suplierTelefono = await this.suplierRepository.findOneBy({ phone });
+    const suplierTelefono = await this.suplierRepository.findOne({ 
+      where: { phone, isActive: true, user: { id: user.id } },
+    });
     if (suplierTelefono)
       throw new BadRequestException('Telefono proveedor ya existe');
+  /************************************************************************** */
 
-    const suplierEmail = await this.suplierRepository.findOneBy({ email });
+    const suplierEmail = await this.suplierRepository.findOne({ 
+      where: { email, isActive: true, user: { id: user.id } },
+     });
     if (suplierEmail)
       throw new BadRequestException('Email proveedor ya existe');
+  /************************************************************************** */
 
-    const suplierWeb = await this.suplierRepository.findOneBy({ web });
+    const suplierWeb = await this.suplierRepository.findOne({ 
+      where: { web, isActive: true, user: { id: user.id } },
+     });
     if (suplierWeb) throw new BadRequestException('Web proveedor ya existe');
-
+  /************************************************************************** */
     try {
       const { address, ...rest } = createSuplierDto;
       // const newAddressSuplier = new SuplierAddress();
@@ -132,13 +144,13 @@ export class SupliersService {
       });
     }
 
-    if (!supplier) throw new NotFoundException('suplier not found');
+    if (!supplier) throw new NotFoundException('Proveedor no existe');
 
     if (supplier.user.id !== user.id)
       throw new ForbiddenException('acceso no permitido');
 
     if (supplier.isActive === false)
-      throw new NotFoundException('suplier is not active');
+      throw new NotFoundException('Proveedor no esta activo');
 
     return { supplier };
   }
@@ -147,8 +159,10 @@ export class SupliersService {
     const { address, ...rest } = updateSplierDto;
     rest.name = rest.name.toLowerCase();
 
-    const suplier = await this.suplierRepository.findOneBy({ id });
-    if (!suplier) throw new NotFoundException('suplier not found');
+    const suplier = await this.suplierRepository.findOne({ 
+      where: { id, isActive: true, user: { id: user.id } },
+    });
+    if (!suplier) throw new NotFoundException('Proveedor no existe');
 
     if (suplier.user.id !== user.id)
       throw new ForbiddenException('acceso no permitido');
@@ -171,7 +185,9 @@ export class SupliersService {
 
     try {
       await this.suplierRepository.update(id, suplier);
-      const supplierUpdate = await this.suplierRepository.findOneBy({ id });
+      const supplierUpdate = await this.suplierRepository.findOne({ 
+        where: { id, isActive: true, user: { id: user.id } },
+      });
       return { supplierUpdate, message: 'Editado con exito' };
     } catch (error) {
       this.handleDBExceptions(error);
@@ -179,9 +195,11 @@ export class SupliersService {
   }
 
   async remove(id: string, user: User) {
-    const suplier = await this.suplierRepository.findOneBy({ id });
-
-    if (!suplier) throw new NotFoundException('suplier not found');
+   
+    const suplier = await this.suplierRepository.findOne({ 
+      where: { id, isActive: true, user: { id: user.id } },
+    });
+    if (!suplier) throw new NotFoundException('Proveedor no existe');
 
     if (suplier.user.id !== user.id)
       throw new ForbiddenException('acceso no permitido');

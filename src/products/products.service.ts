@@ -36,17 +36,19 @@ export class ProductsService {
     const { category, supplier, ...rest } = createProductDto;
     rest.name = rest.name.toLowerCase();
 
-    const ProductFound = await this.productRepository.findOneBy({
-      name: rest.name,
+    const ProductFound = await this.productRepository.findOne({
+      where: { name: rest.name, isActive: true, user: { id: user.id } },
     });
     if (ProductFound) throw new BadRequestException('Producto ya existe');
 
-    const categoryDb = await this.categoryRepository.findOneBy({
-      name: category,
+    const categoryDb = await this.categoryRepository.findOne({
+      where: { name: category, isActive: true, user: { id: user.id } },
     });
     if (!categoryDb) throw new NotFoundException('categoria no existe');
 
-    const suplierDb = await this.suplierRepository.findOneBy({ name: supplier });
+    const suplierDb = await this.suplierRepository.findOne({
+      where: { name: supplier , isActive: true, user: { id: user.id }}
+      });
     if (!suplierDb) throw new NotFoundException('proveedor no existe');
 
     try {
@@ -116,6 +118,37 @@ export class ProductsService {
   }
 
 
+  // async decreaseStock (idPro: string, quantity: number, user: User) {
+  //   //const decreaseStock = async (idPro: string, quantity: number) => {
+  
+  //     const { stock, name } = await this.productRepository.findOne({
+  //       where: { id : idPro,  isActive: true,user: { id: user.id }, },
+  //       select: { name: true, stock: true, id: true, isActive: true }
+  //      });
+
+
+  //   //   const { stock, name } = await this.productRepository.findOneBy({
+  //   //     id: idPro,
+  //   //  });
+  
+    
+  //     if (stock < quantity){
+  //       throw new BadRequestException(
+  //         `producto ${name} no tiene stock suficiente`,
+  //       );
+  //     }
+      
+  //     const newStock = stock - quantity;
+  
+  //     try {
+  //       await this.productRepository.update({ id: idPro }, { stock: newStock });
+  //     } catch (error) {
+  //       console.log(error);
+  //       this.handleDBExceptions(error);
+  //     }
+  //   };
+
+
 
   async findAll(paginationDto: PaginationDto, user: User) {
     const { limit = 10, offset = 0 } = paginationDto;
@@ -158,13 +191,13 @@ export class ProductsService {
       });
     }
 
-    if (!product) throw new NotFoundException('product not found');
+    if (!product) throw new NotFoundException('producto no existe');
 
     if (product.user.id !== user.id)
       throw new ForbiddenException('acceso no permitido');
 
     if (product.isActive === false)
-      throw new NotFoundException('product is not active');
+      throw new NotFoundException('producto no esta activo');
 
     return {product};
   }
@@ -176,18 +209,24 @@ export class ProductsService {
     if (!isUUID(id)) {
       throw new BadRequestException('producto no valido');
     }
-
-    const product = await this.productRepository.findOneBy({ id });
+/*********************************************************************** */
+    const product = await this.productRepository.findOne({ 
+      where: { id , isActive: true, user: { id: user.id }}
+     });
     if (!product) throw new NotFoundException('producto no existe');
+    /*********************************************************************** */
 
-    const categoryDb = await this.categoryRepository.findOneBy({
-      name: category,
+    const categoryDb = await this.categoryRepository.findOne({
+      where: { name: category, isActive: true, user: { id: user.id }}
     });
     if (!categoryDb) throw new NotFoundException('categoria no existe');
+    /*********************************************************************** */
 
-    const suplierDb = await this.suplierRepository.findOneBy({ name: supplier });
+    const suplierDb = await this.suplierRepository.findOne({ 
+      where: { name: supplier, isActive: true, user: { id: user.id }}
+    });
     if (!suplierDb) throw new NotFoundException('proveedor no existe');
-
+  /*********************************************************************** */
     if (product.user.id !== user.id)
       throw new ForbiddenException('acceso no permitido');
 
@@ -202,7 +241,9 @@ export class ProductsService {
       product.supplier = suplierDb || product.supplier;
 
       await this.productRepository.update(id, product);
-      const productUpdate = await this.productRepository.findOneBy({ id });
+      const productUpdate =  await this.productRepository.findOne({ 
+        where: { id , isActive: true, user: { id: user.id }}
+       });
       return { productUpdate, message: 'Editado con exito' };
     } catch (error) {
       this.handleDBExceptions(error);
@@ -210,13 +251,13 @@ export class ProductsService {
   }
 
   async remove(id: string, user: User) {
-    const product = await this.productRepository.findOneBy({ id });
-    if (!product) throw new NotFoundException('product not found');
+    const product =  await this.productRepository.findOne({ 
+      where: { id , isActive: true, user: { id: user.id }}
+     });
+    if (!product) throw new NotFoundException('producto no existe');
 
     if (product.user.id !== user.id)
       throw new ForbiddenException('acceso no permitido');
-
-    product.isActive = false;
 
     try {
       await this.productRepository.delete(id);

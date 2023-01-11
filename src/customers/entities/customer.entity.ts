@@ -17,28 +17,20 @@ export class Customer {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column('text', {
-    unique: true,
-  })
+  @Column('text')
   rut: string;
 
   @Column('text')
   name: string;
 
-  @Column('text', {
-    unique: true,
-  })
+  @Column('text')
   phone: string;
 
   @IsEmail()
-  @Column('text', {
-    unique: true,
-  })
+  @Column('text')
   email: string;
 
-  @Column('text', {
-    unique: true,
-  })
+  @Column('text')
   web: string;
 
   @Column('bool', {
